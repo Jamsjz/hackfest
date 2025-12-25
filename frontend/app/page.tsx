@@ -7,6 +7,7 @@ import GoogleTranslate from "@/components/GoogleTranslate"; // Import the new co
 export default function Home() {
   return (
     <main className="relative" style={{ position: "relative" }}>
+			<GoogleTranslate/>
       <Header />
       <HeroSection />
       <div className="relative" style={{ position: "relative" }}>
