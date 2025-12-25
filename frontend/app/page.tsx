@@ -1,7 +1,8 @@
-import Header from "@/components/header"
-import HeroSection from "@/components/hero-section"
-import MasonryGallerySection from "@/components/masonry-gallery-section"
-import CTASection from "@/components/cta-section"
+import Header from "@/components/header";
+import HeroSection from "@/components/hero-section";
+import MasonryGallerySection from "@/components/masonry-gallery-section";
+import CTASection from "@/components/cta-section";
+import GoogleTranslate from "@/components/GoogleTranslate"; // Import the new component
 
 export default function Home() {
   return (
@@ -17,5 +18,6 @@ export default function Home() {
         </div>
       </div>
     </main>
-  )
+  );
 }
+
