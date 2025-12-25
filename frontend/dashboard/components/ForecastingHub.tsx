@@ -39,18 +39,7 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
     const fullSummary = forecast.summary;
 
     const generateReport = async () => {
-        if (!reportRef.current) {
-            console.error("Report template not available. Please ensure forecast data is loaded.");
-            alert("Unable to generate report. Please ensure forecast data is loaded and try again.");
-            return;
-        }
-
-        if (!currentDay || !dynamicSummary) {
-            console.error("Missing forecast data: currentDay or dynamicSummary is null");
-            alert("Unable to generate report. Forecast data is incomplete. Please wait for data to load.");
-            return;
-        }
-
+        if (!reportRef.current) return;
         setReportStatus('generating');
 
         try {
@@ -62,58 +51,27 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                 useCORS: true,
                 logging: false,
                 backgroundColor: '#ffffff',
-                // This is crucial: html2canvas fails on modern lab()/oklch()/lch() colors.
+                // This is crucial: html2canvas fails on modern lab()/oklch() colors.
                 // We sanitize the cloned document before rendering.
                 onclone: (clonedDoc) => {
-                    // Helper function to replace unsupported color functions
-                    const sanitizeColor = (text: string): string => {
-                        if (!text) return text;
-                        // Replace lab(), oklch(), lch(), and other unsupported color functions
-                        // Use a more comprehensive regex that handles:
-                        // - lab(percentage percentage percentage)
-                        // - oklch(percentage percentage hue)
-                        // - lch(lightness chroma hue)
-                        // - color-mix(...)
-                        // Match with word boundaries and handle nested parentheses
-                        let sanitized = text;
-                        // Multiple passes to catch all variations
-                        const colorFunctionPattern = /\b(lab|oklch|lch|color-mix)\s*\([^)]*\)/gi;
-                        let previousText = '';
-                        let iterations = 0;
-                        // Keep replacing until no more matches (handles nested cases)
-                        while (sanitized !== previousText && iterations < 10) {
-                            previousText = sanitized;
-                            sanitized = sanitized.replace(colorFunctionPattern, '#4B5563');
-                            iterations++;
-                        }
-                        return sanitized;
-                    };
+                    // Regex to match all modern color functions that html2canvas doesn't support
+                    const unsupportedColorRegex = /(lab|oklch|lch|oklab|color)\([^)]+\)/gi;
+                    const fallbackColor = '#4B5563'; // Neutral gray
 
-                    // 1. Sanitize all style tags by replacing lab/oklch/lch with a safe HEX fallback
-                    // This includes styles in head, body, and anywhere else
+                    // 1. Sanitize all style tags by replacing unsupported colors with fallback
                     clonedDoc.querySelectorAll('style').forEach(tag => {
                         if (tag.textContent) {
-                            tag.textContent = sanitizeColor(tag.textContent);
-                        }
-                        // Also check innerHTML as a fallback
-                        if (tag.innerHTML) {
-                            tag.innerHTML = sanitizeColor(tag.innerHTML);
+                            tag.textContent = tag.textContent.replace(unsupportedColorRegex, fallbackColor);
                         }
                     });
 
                     // 2. Sanitize inline styles on all elements
-                    clonedDoc.querySelectorAll('*').forEach((element: Element) => {
-                        const htmlElement = element as HTMLElement;
-                        if (htmlElement.style && htmlElement.style.cssText) {
-                            htmlElement.style.cssText = sanitizeColor(htmlElement.style.cssText);
-                        }
-                        // Also check individual style properties
-                        const style = htmlElement.style;
-                        for (let i = 0; i < style.length; i++) {
-                            const prop = style[i];
-                            const value = style.getPropertyValue(prop);
-                            if (value && /(lab|oklch|lch|color-mix)\(/i.test(value)) {
-                                style.setProperty(prop, '#4B5563', style.getPropertyPriority(prop));
+                    clonedDoc.querySelectorAll('*').forEach(el => {
+                        const element = el as HTMLElement;
+                        if (element.style) {
+                            const styleStr = element.getAttribute('style');
+                            if (styleStr && unsupportedColorRegex.test(styleStr)) {
+                                element.setAttribute('style', styleStr.replace(unsupportedColorRegex, fallbackColor));
                             }
                         }
                     });
@@ -122,26 +80,7 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                     // and cause the html2canvas internal parser to crash.
                     clonedDoc.querySelectorAll('link[rel="stylesheet"]').forEach(l => l.remove());
 
-                    // 4. Sanitize all elements' inline styles more aggressively
-                    clonedDoc.querySelectorAll('*').forEach((element: Element) => {
-                        const htmlElement = element as HTMLElement;
-                        if (htmlElement.hasAttribute('style')) {
-                            const originalStyle = htmlElement.getAttribute('style') || '';
-                            const sanitizedStyle = sanitizeColor(originalStyle);
-                            if (sanitizedStyle !== originalStyle) {
-                                htmlElement.setAttribute('style', sanitizedStyle);
-                            }
-                        }
-                        // Also sanitize style object directly
-                        if (htmlElement.style && htmlElement.style.cssText) {
-                            const cssText = htmlElement.style.cssText;
-                            if (/(lab|oklch|lch|color-mix)\(/i.test(cssText)) {
-                                htmlElement.style.cssText = sanitizeColor(cssText);
-                            }
-                        }
-                    });
-
-                    // 5. Inject a dedicated "Safe Layout" stylesheet to ensure the report template 
+                    // 4. Inject a dedicated "Safe Layout" stylesheet to ensure the report template 
                     // retains its structure even after external styles are removed.
                     const reportLayout = clonedDoc.createElement('style');
                     reportLayout.textContent = `
@@ -172,7 +111,7 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                         .mb-1 { margin-bottom: 0.25rem !important; }
                         .mb-4 { margin-bottom: 1rem !important; }
                         .mb-8 { margin-bottom: 2rem !important; }
-                        .max-w-\[300px\] { max-width: 300px !important; }
+                        .max-w-\\[300px\\] { max-width: 300px !important; }
                         .rounded-lg { border-radius: 0.5rem !important; }
                         .rounded-xl { border-radius: 0.75rem !important; }
                         .rounded-2xl { border-radius: 1rem !important; }
@@ -196,6 +135,26 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                         .uppercase { text-transform: uppercase !important; }
                         .tracking-tighter { letter-spacing: -0.05em !important; }
                         .tracking-widest { letter-spacing: 0.1em !important; }
+                        /* Force text colors to be safe hex values */
+                        .text-white { color: #ffffff !important; }
+                        .text-gray-500 { color: #6B7280 !important; }
+                        .text-gray-600 { color: #4B5563 !important; }
+                        .text-gray-700 { color: #374151 !important; }
+                        .text-gray-800 { color: #1F2937 !important; }
+                        .text-green-600 { color: #16A34A !important; }
+                        .text-green-700 { color: #15803D !important; }
+                        .text-amber-600 { color: #D97706 !important; }
+                        .text-amber-700 { color: #B45309 !important; }
+                        .text-red-600 { color: #DC2626 !important; }
+                        .text-blue-600 { color: #2563EB !important; }
+                        /* Background colors */
+                        .bg-white { background-color: #ffffff !important; }
+                        .bg-gray-50 { background-color: #F9FAFB !important; }
+                        .bg-gray-100 { background-color: #F3F4F6 !important; }
+                        .bg-green-50 { background-color: #F0FDF4 !important; }
+                        .bg-green-100 { background-color: #DCFCE7 !important; }
+                        .bg-amber-50 { background-color: #FFFBEB !important; }
+                        .bg-amber-100 { background-color: #FEF3C7 !important; }
                     `;
                     clonedDoc.head.appendChild(reportLayout);
                 }
@@ -207,17 +166,6 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
         } catch (error) {
             console.error("Failed to generate report:", error);
             setReportStatus('idle');
-            
-            // Provide more helpful error messages
-            let errorMessage = "Failed to generate report. Please try again.";
-            if (error instanceof Error) {
-                if (error.message.includes('lab') || error.message.includes('oklch') || error.message.includes('lch')) {
-                    errorMessage = "Report generation failed due to unsupported color format. This has been reported and should be fixed. Please try refreshing the page and generating again.";
-                } else {
-                    errorMessage = `Error: ${error.message}`;
-                }
-            }
-            alert(errorMessage);
         }
     };
 
@@ -347,21 +295,19 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
         };
     }, [forecast.daily, dayIndex, currentDay]);
 
-    // Don't return null - we need the report template to always render
-    // Instead, conditionally render the visible content
-    const hasValidData = currentDay && dynamicSummary;
+    if (!currentDay || !dynamicSummary) return null;
 
     return (
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/40 shadow-xl overflow-hidden relative">
+        <div className="glass-card-dark rounded-2xl overflow-hidden relative">
             {/* Header */}
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 px-6 py-5 text-white">
+            <div className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 px-6 py-5 text-white relative overflow-hidden">
                 <div className="flex justify-between items-start">
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                            <Zap className="w-5 h-5 text-yellow-400" />
-                            <h2 className="text-xl font-black uppercase tracking-wide">AI Forecasting Hub</h2>
+                            <Zap className="w-5 h-5 text-white" />
+                            <h2 className="text-xl font-black uppercase tracking-wide">Forecasting Hub</h2>
                         </div>
-                        <p className="text-indigo-200 text-sm">Precision Agriculture • {dayIndex + 1}-Day Forecast • {cropName}</p>
+                        <p className="text-amber-100/80 text-sm">Precision Agriculture • {dayIndex + 1}-Day Forecast • {cropName}</p>
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -369,13 +315,7 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                             {reportStatus === 'idle' && (
                                 <button
                                     onClick={generateReport}
-                                    disabled={!hasValidData}
-                                    className={`flex items-center gap-2 px-4 py-2 border border-white/20 rounded-xl text-[10px] font-black tracking-widest transition-all shadow-lg backdrop-blur-md ${
-                                        hasValidData 
-                                            ? 'bg-white/10 hover:bg-white/20 hover:scale-105 active:scale-95' 
-                                            : 'bg-white/5 opacity-50 cursor-not-allowed'
-                                    }`}
-                                    title={!hasValidData ? "Please wait for forecast data to load" : "Generate PDF report"}
+                                    className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-[10px] font-black tracking-widest transition-all hover:scale-105 active:scale-95 shadow-lg backdrop-blur-md"
                                 >
                                     <FileText className="w-4 h-4 text-indigo-200" />
                                     <span>GENERATE REPORT</span>
@@ -403,7 +343,7 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                         <div className="h-8 w-px bg-white/10 hidden md:block" />
 
                         <div className="hidden md:flex flex-col items-end">
-                            <div className="px-3 py-0.5 bg-white/20 rounded-full text-[9px] font-black backdrop-blur-sm mb-0.5 uppercase tracking-tighter">
+                            <div className="px-3 py-0.5 bg-black/20 rounded-full text-[9px] font-black backdrop-blur-sm mb-0.5 uppercase tracking-tighter">
                                 {isBackendConnected ? '🟢 Live Data' : '🟡 Demo Data'}
                             </div>
                             <p className="text-lg font-black font-mono leading-none">DAY {currentDay.day_index}</p>
@@ -417,7 +357,7 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition-all ${activeTab === tab ? 'bg-white text-indigo-700' : 'bg-white/20 text-white hover:bg-white/30'
+                            className={`px-4 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition-all ${activeTab === tab ? 'bg-white text-amber-700' : 'bg-black/20 text-white hover:bg-black/30'
                                 }`}
                         >
                             {tab === 'simulation' && '🌱 Simulation'}
@@ -429,10 +369,10 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
             </div>
 
             {/* Time Travel Slider - Shared across all tabs */}
-            <div className="px-6 pt-6 pb-2 border-b border-gray-100 bg-gray-50/50">
-                <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-bold text-gray-600 uppercase tracking-wider">📅 Forecast Range</span>
-                    <span className="text-sm text-gray-500 font-medium">Showing data up to Day {dayIndex + 1}</span>
+            <div className="px-6 pt-6 pb-4 border-b border-white/5 bg-[#141416]">
+                <div className="flex justify-between items-center mb-3">
+                    <span className="text-sm font-bold text-zinc-400 uppercase tracking-wider">📅 Forecast Range</span>
+                    <span className="text-sm text-zinc-500 font-medium">Showing data up to Day {dayIndex + 1}</span>
                 </div>
                 <input
                     type="range"
@@ -440,9 +380,9 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                     max={forecast.daily.length - 1}
                     value={dayIndex}
                     onChange={(e) => setDayIndex(parseInt(e.target.value))}
-                    className="w-full h-3 bg-gradient-to-r from-green-200 via-yellow-200 to-red-200 rounded-full appearance-none cursor-pointer"
+                    className="w-full h-3 bg-gradient-to-r from-emerald-500/30 via-amber-500/30 to-red-500/30 rounded-full appearance-none cursor-pointer"
                 />
-                <div className="flex justify-between text-xs font-bold text-gray-400 mt-1 uppercase">
+                <div className="flex justify-between text-xs font-bold text-zinc-600 mt-2 uppercase">
                     <span>Today</span>
                     <span>+5 Days</span>
                     <span>+10 Days</span>
@@ -450,17 +390,10 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                 </div>
             </div>
 
-            {!hasValidData ? (
-                <div className="p-12 text-center">
-                    <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-                    <p className="font-bold text-gray-600">Loading forecast data...</p>
-                    <p className="text-sm text-gray-400 mt-2">Please wait while we prepare your forecast</p>
-                </div>
-            ) : (
-                <AnimatePresence mode="wait">
-                    {/* SIMULATION TAB */}
-                    {activeTab === 'simulation' && (
-                    <motion.div key={`simulation-${dayIndex}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">
+            <AnimatePresence mode="wait">
+                {/* SIMULATION TAB */}
+                {activeTab === 'simulation' && (
+                    <motion.div key={`simulation-${dayIndex}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6 bg-[#0d0d0f]">
                         {/* Main Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             {/* Growth Stage Card */}
@@ -571,7 +504,7 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
 
                 {/* SUMMARY TAB - Now dynamic based on dayIndex */}
                 {activeTab === 'summary' && (
-                    <motion.div key={`summary-${dayIndex}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">
+                    <motion.div key={`summary-${dayIndex}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6 bg-[#0d0d0f]">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {/* Yield Prediction */}
                             <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden">
@@ -623,7 +556,7 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
 
                 {/* RECOMMENDATIONS TAB - Now dynamic based on dayIndex */}
                 {activeTab === 'recommendations' && (
-                    <motion.div key={`recommendations-${dayIndex}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">
+                    <motion.div key={`recommendations-${dayIndex}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6 bg-[#0d0d0f]">
                         {/* Row 1: Farm Summary + Crop Recommendations */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             {/* Farm Summary Card - Dynamic */}
@@ -742,9 +675,8 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                             </div>
                         </div>
                     </motion.div>
-                    )}
-                </AnimatePresence>
-            )}
+                )}
+            </AnimatePresence>
 
             {/* REPORT PREVIEW MODAL */}
             <AnimatePresence>
@@ -831,168 +763,159 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                 )}
             </AnimatePresence>
 
-            {/* HIDDEN PRINTABLE REPORT TEMPLATE - Always render so ref is available */}
+            {/* HIDDEN PRINTABLE REPORT TEMPLATE */}
             <div className="absolute opacity-0 pointer-events-none overflow-hidden" style={{ width: '800px', left: '-9999px' }}>
                 <div ref={reportRef} className="bg-white p-10 font-sans" style={{ color: '#1F2937' }}>
-                    {hasValidData ? (
-                        <>
-                            {/* Report Header */}
-                            <div className="flex justify-between items-start border-b-4 pb-6 mb-8" style={{ borderColor: '#4F46E5' }}>
-                                <div>
-                                    <h1 className="text-4xl font-black tracking-tighter" style={{ color: '#4338CA' }}>KRISHIBOT DIAGNOSTIC</h1>
-                                    <p className="text-sm font-bold uppercase tracking-widest" style={{ color: '#9CA3AF' }}>Precision Agriculture Analysis Report</p>
+                    {/* Report Header */}
+                    <div className="flex justify-between items-start border-b-4 pb-6 mb-8" style={{ borderColor: '#4F46E5' }}>
+                        <div>
+                            <h1 className="text-4xl font-black tracking-tighter" style={{ color: '#4338CA' }}>कृषि बोट DIAGNOSTIC</h1>
+                            <p className="text-sm font-bold uppercase tracking-widest" style={{ color: '#9CA3AF' }}>Precision Agriculture Analysis Report</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="font-bold text-lg" style={{ color: '#111827' }}>Report ID: #KB-{Math.floor(Date.now() / 100000)}</p>
+                            <p style={{ color: '#6B7280' }}>{new Date().toLocaleDateString()} • {new Date().toLocaleTimeString()}</p>
+                        </div>
+                    </div>
+
+                    {/* Meta Info */}
+                    <div className="grid grid-cols-3 gap-6 mb-8">
+                        <div className="p-4 rounded-xl border" style={{ backgroundColor: '#F9FAFB', borderColor: '#F3F4F6' }}>
+                            <p className="text-xs font-bold uppercase mb-1" style={{ color: '#9CA3AF' }}>Target Crop</p>
+                            <p className="text-xl font-black" style={{ color: '#1F2937' }}>{cropName}</p>
+                            <p className="text-xs" style={{ color: '#6B7280' }}>{activeCrop?.variety || 'Standard Variety'}</p>
+                        </div>
+                        <div className="p-4 rounded-xl border" style={{ backgroundColor: '#F9FAFB', borderColor: '#F3F4F6' }}>
+                            <p className="text-xs font-bold uppercase mb-1" style={{ color: '#9CA3AF' }}>Analysis Period</p>
+                            <p className="text-xl font-black" style={{ color: '#1F2937' }}>{dynamicSummary.analysis_period}</p>
+                            <p className="text-xs" style={{ color: '#6B7280' }}>Day 1 to {dayIndex + 1}</p>
+                        </div>
+                        <div className="p-4 rounded-xl border" style={{ backgroundColor: '#F9FAFB', borderColor: '#F3F4F6' }}>
+                            <p className="text-xs font-bold uppercase mb-1" style={{ color: '#9CA3AF' }}>Yield Classification</p>
+                            <p className="text-xl font-black" style={{ color: '#4F46E5' }}>{dynamicSummary.yield_estimate.classification}</p>
+                            <p className="text-xs" style={{ color: '#6B7280' }}>{dynamicSummary.yield_estimate.percentage} Forecast Probability</p>
+                        </div>
+                    </div>
+
+                    {/* Main Content Grid */}
+                    <div className="grid grid-cols-2 gap-8 mb-8">
+                        {/* Environmental Snapshot */}
+                        <div>
+                            <h2 className="text-sm font-black uppercase mb-4 tracking-widest border-l-4 pl-2" style={{ color: '#9CA3AF', borderColor: '#4F46E5' }}>24h Simulation Snapshot</h2>
+                            <div className="space-y-3">
+                                <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#EEF2FF' }}>
+                                    <span className="font-bold" style={{ color: '#4B5563' }}>Growth Stage</span>
+                                    <span className="font-black" style={{ color: '#4338CA' }}>{currentDay.crop_stage} ({currentDay.stage_progress}%)</span>
                                 </div>
-                                <div className="text-right">
-                                    <p className="font-bold text-lg" style={{ color: '#111827' }}>Report ID: #KB-{Math.floor(Date.now() / 100000)}</p>
-                                    <p style={{ color: '#6B7280' }}>{new Date().toLocaleDateString()} • {new Date().toLocaleTimeString()}</p>
+                                <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
+                                    <span className="font-bold" style={{ color: '#4B5563' }}>Peak Temperature</span>
+                                    <span className="font-black" style={{ color: '#1F2937' }}>{currentDay.t_max.toFixed(1)}°C</span>
+                                </div>
+                                <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
+                                    <span className="font-bold" style={{ color: '#4B5563' }}>GDD Accumulation</span>
+                                    <span className="font-black" style={{ color: '#16A34A' }}>+{currentDay.gdd.toFixed(1)} GDD</span>
+                                </div>
+                                <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
+                                    <span className="font-bold" style={{ color: '#4B5563' }}>VPD Stress</span>
+                                    <span className="font-black" style={{ color: '#1F2937' }}>{currentDay.vpd.toFixed(2)} kPa</span>
+                                </div>
+                                <div className="flex justify-between p-3 rounded-lg border" style={{ backgroundColor: '#EFF6FF', borderColor: '#DBEAFE' }}>
+                                    <span className="font-bold" style={{ color: '#1D4ED8' }}>Irrigation Recommendation</span>
+                                    <span className="font-black" style={{ color: '#1E40AF' }}>{currentDay.irrigation_needed ? 'REQUIRED' : 'NOT NEEDED'}</span>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Meta Info */}
-                            <div className="grid grid-cols-3 gap-6 mb-8">
-                                <div className="p-4 rounded-xl border" style={{ backgroundColor: '#F9FAFB', borderColor: '#F3F4F6' }}>
-                                    <p className="text-xs font-bold uppercase mb-1" style={{ color: '#9CA3AF' }}>Target Crop</p>
-                                    <p className="text-xl font-black" style={{ color: '#1F2937' }}>{cropName}</p>
-                                    <p className="text-xs" style={{ color: '#6B7280' }}>{activeCrop?.variety || 'Standard Variety'}</p>
-                                </div>
-                                <div className="p-4 rounded-xl border" style={{ backgroundColor: '#F9FAFB', borderColor: '#F3F4F6' }}>
-                                    <p className="text-xs font-bold uppercase mb-1" style={{ color: '#9CA3AF' }}>Analysis Period</p>
-                                    <p className="text-xl font-black" style={{ color: '#1F2937' }}>{dynamicSummary!.analysis_period}</p>
-                                    <p className="text-xs" style={{ color: '#6B7280' }}>Day 1 to {dayIndex + 1}</p>
-                                </div>
-                                <div className="p-4 rounded-xl border" style={{ backgroundColor: '#F9FAFB', borderColor: '#F3F4F6' }}>
-                                    <p className="text-xs font-bold uppercase mb-1" style={{ color: '#9CA3AF' }}>Yield Classification</p>
-                                    <p className="text-xl font-black" style={{ color: '#4F46E5' }}>{dynamicSummary!.yield_estimate.classification}</p>
-                                    <p className="text-xs" style={{ color: '#6B7280' }}>{dynamicSummary!.yield_estimate.percentage} Forecast Probability</p>
-                                </div>
-                            </div>
-
-                            {/* Main Content Grid */}
-                            <div className="grid grid-cols-2 gap-8 mb-8">
-                                {/* Environmental Snapshot */}
-                                <div>
-                                    <h2 className="text-sm font-black uppercase mb-4 tracking-widest border-l-4 pl-2" style={{ color: '#9CA3AF', borderColor: '#4F46E5' }}>24h Simulation Snapshot</h2>
-                                    <div className="space-y-3">
-                                        <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#EEF2FF' }}>
-                                            <span className="font-bold" style={{ color: '#4B5563' }}>Growth Stage</span>
-                                            <span className="font-black" style={{ color: '#4338CA' }}>{currentDay!.crop_stage} ({currentDay!.stage_progress}%)</span>
+                        {/* Cumulative Outlook */}
+                        <div>
+                            <h2 className="text-sm font-black uppercase mb-4 tracking-widest border-l-4 pl-2" style={{ color: '#9CA3AF', borderColor: '#F97316' }}>{dayIndex + 1}-Day Aggregate Outlook</h2>
+                            <div className="bg-white border-2 rounded-2xl p-5 shadow-sm" style={{ borderColor: '#F3F4F6' }}>
+                                <div className="space-y-4">
+                                    <div>
+                                        <div className="flex justify-between mb-1">
+                                            <span className="text-xs font-bold" style={{ color: '#6B7280' }}>Heat Stress Resistance</span>
+                                            <span className="text-xs font-bold" style={{ color: '#1F2937' }}>{dynamicSummary.heat_stress_days} Days Detected</span>
                                         </div>
-                                        <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
-                                            <span className="font-bold" style={{ color: '#4B5563' }}>Peak Temperature</span>
-                                            <span className="font-black" style={{ color: '#1F2937' }}>{currentDay!.t_max.toFixed(1)}°C</span>
-                                        </div>
-                                        <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
-                                            <span className="font-bold" style={{ color: '#4B5563' }}>GDD Accumulation</span>
-                                            <span className="font-black" style={{ color: '#16A34A' }}>+{currentDay!.gdd.toFixed(1)} GDD</span>
-                                        </div>
-                                        <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
-                                            <span className="font-bold" style={{ color: '#4B5563' }}>VPD Stress</span>
-                                            <span className="font-black" style={{ color: '#1F2937' }}>{(currentDay!.vpd ?? 0).toFixed(2)} kPa</span>
-                                        </div>
-                                        <div className="flex justify-between p-3 rounded-lg border" style={{ backgroundColor: '#EFF6FF', borderColor: '#DBEAFE' }}>
-                                            <span className="font-bold" style={{ color: '#1D4ED8' }}>Irrigation Recommendation</span>
-                                            <span className="font-black" style={{ color: '#1E40AF' }}>{currentDay!.irrigation_needed ? 'REQUIRED' : 'NOT NEEDED'}</span>
+                                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                            <div className="h-full" style={{ width: `${(dynamicSummary.heat_stress_days / (dayIndex + 1)) * 100}%`, backgroundColor: '#F87171' }} />
                                         </div>
                                     </div>
-                                </div>
-
-                                {/* Cumulative Outlook */}
-                                <div>
-                                    <h2 className="text-sm font-black uppercase mb-4 tracking-widest border-l-4 pl-2" style={{ color: '#9CA3AF', borderColor: '#F97316' }}>{dayIndex + 1}-Day Aggregate Outlook</h2>
-                                    <div className="bg-white border-2 rounded-2xl p-5 shadow-sm" style={{ borderColor: '#F3F4F6' }}>
-                                        <div className="space-y-4">
-                                            <div>
-                                                <div className="flex justify-between mb-1">
-                                                    <span className="text-xs font-bold" style={{ color: '#6B7280' }}>Heat Stress Resistance</span>
-                                                    <span className="text-xs font-bold" style={{ color: '#1F2937' }}>{dynamicSummary!.heat_stress_days} Days Detected</span>
-                                                </div>
-                                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                                    <div className="h-full" style={{ width: `${(dynamicSummary!.heat_stress_days / (dayIndex + 1)) * 100}%`, backgroundColor: '#F87171' }} />
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div className="flex justify-between mb-1">
-                                                    <span className="text-xs font-bold" style={{ color: '#6B7280' }}>Water Availability Index</span>
-                                                    <span className="text-xs font-bold" style={{ color: '#1F2937' }}>{dynamicSummary!.total_precipitation.toFixed(1)} mm Total Rain</span>
-                                                </div>
-                                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                                    <div className="h-full" style={{ width: `${Math.min(100, (dynamicSummary!.total_precipitation / 50) * 100)}%`, backgroundColor: '#60A5FA' }} />
-                                                </div>
-                                            </div>
-                                            <div className="pt-4 border-t grid grid-cols-2 gap-4" style={{ borderColor: '#F3F4F6' }}>
-                                                <div className="text-center">
-                                                    <p className="text-[10px] font-bold uppercase" style={{ color: '#9CA3AF' }}>Estimated Harvest</p>
-                                                    <p className="text-2xl font-black" style={{ color: '#1F2937' }}>{dynamicSummary!.harvest.days_remaining} Days</p>
-                                                </div>
-                                                <div className="text-center">
-                                                    <p className="text-[10px] font-bold uppercase" style={{ color: '#9CA3AF' }}>Average GDD/Day</p>
-                                                    <p className="text-2xl font-black" style={{ color: '#1F2937' }}>{dynamicSummary!.avg_daily_gdd.toFixed(1)}</p>
-                                                </div>
-                                            </div>
+                                    <div>
+                                        <div className="flex justify-between mb-1">
+                                            <span className="text-xs font-bold" style={{ color: '#6B7280' }}>Water Availability Index</span>
+                                            <span className="text-xs font-bold" style={{ color: '#1F2937' }}>{dynamicSummary.total_precipitation.toFixed(1)} mm Total Rain</span>
+                                        </div>
+                                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                            <div className="h-full" style={{ width: `${Math.min(100, (dynamicSummary.total_precipitation / 50) * 100)}%`, backgroundColor: '#60A5FA' }} />
+                                        </div>
+                                    </div>
+                                    <div className="pt-4 border-t grid grid-cols-2 gap-4" style={{ borderColor: '#F3F4F6' }}>
+                                        <div className="text-center">
+                                            <p className="text-[10px] font-bold uppercase" style={{ color: '#9CA3AF' }}>Estimated Harvest</p>
+                                            <p className="text-2xl font-black" style={{ color: '#1F2937' }}>{dynamicSummary.harvest.days_remaining} Days</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-[10px] font-bold uppercase" style={{ color: '#9CA3AF' }}>Average GDD/Day</p>
+                                            <p className="text-2xl font-black" style={{ color: '#1F2937' }}>{dynamicSummary.avg_daily_gdd.toFixed(1)}</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
 
-                            {/* AI Action Items Section */}
-                            <div className="rounded-2xl p-6 mb-8" style={{ backgroundColor: '#4338CA', color: '#FFFFFF' }}>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <span style={{ color: '#FACC15' }}><Sparkles className="w-6 h-6" /></span>
-                                    <h2 className="text-lg font-black uppercase tracking-widest">AI Action Items & Mitigation</h2>
+                    {/* AI Action Items Section */}
+                    <div className="rounded-2xl p-6 mb-8" style={{ backgroundColor: '#4338CA', color: '#FFFFFF' }}>
+                        <div className="flex items-center gap-2 mb-4">
+                            <span style={{ color: '#FACC15' }}><Sparkles className="w-6 h-6" /></span>
+                            <h2 className="text-lg font-black uppercase tracking-widest">AI Action Items & Mitigation</h2>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3">
+                            {dynamicSummary.recommendations.map((rec, i) => (
+                                <div key={i} className="flex gap-3 items-start p-4 rounded-xl border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>{i + 1}</div>
+                                    <p className="text-sm font-bold leading-tight">{rec}</p>
                                 </div>
-                                <div className="grid grid-cols-1 gap-3">
-                                    {dynamicSummary!.recommendations.map((rec, i) => (
-                                        <div key={i} className="flex gap-3 items-start p-4 rounded-xl border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-                                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>{i + 1}</div>
-                                            <p className="text-sm font-bold leading-tight">{rec}</p>
-                                        </div>
-                                    ))}
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Soil Health Footer (Summary) */}
+                    {soilData && (
+                        <div className="pt-6 border-t" style={{ borderColor: '#F3F4F6' }}>
+                            <h3 className="text-xs font-black uppercase mb-4 tracking-widest text-center" style={{ color: '#9CA3AF' }}>Reference Soil Parameters</h3>
+                            <div className="flex justify-between px-10">
+                                <div className="text-center">
+                                    <p className="text-[10px] font-bold" style={{ color: '#9CA3AF' }}>NITROGEN</p>
+                                    <p className="font-black text-lg" style={{ color: '#1F2937' }}>{soilData.nitrogen.toFixed(2)}%</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-[10px] font-bold" style={{ color: '#9CA3AF' }}>PHOSPHORUS</p>
+                                    <p className="font-black text-lg" style={{ color: '#1F2937' }}>{soilData.phosphorus.toFixed(2)}</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-[10px] font-bold" style={{ color: '#9CA3AF' }}>POTASSIUM</p>
+                                    <p className="font-black text-lg" style={{ color: '#1F2937' }}>{soilData.potassium.toFixed(2)}</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-[10px] font-bold" style={{ color: '#9CA3AF' }}>PH LEVEL</p>
+                                    <p className="font-black text-lg" style={{ color: '#1F2937' }}>{soilData.ph.toFixed(1)}</p>
                                 </div>
                             </div>
-
-                            {/* Soil Health Footer (Summary) */}
-                            {soilData && (
-                                <div className="pt-6 border-t" style={{ borderColor: '#F3F4F6' }}>
-                                    <h3 className="text-xs font-black uppercase mb-4 tracking-widest text-center" style={{ color: '#9CA3AF' }}>Reference Soil Parameters</h3>
-                                    <div className="flex justify-between px-10">
-                                        <div className="text-center">
-                                            <p className="text-[10px] font-bold" style={{ color: '#9CA3AF' }}>NITROGEN</p>
-                                            <p className="font-black text-lg" style={{ color: '#1F2937' }}>{soilData.nitrogen.toFixed(2)}%</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-[10px] font-bold" style={{ color: '#9CA3AF' }}>PHOSPHORUS</p>
-                                            <p className="font-black text-lg" style={{ color: '#1F2937' }}>{soilData.phosphorus.toFixed(2)}</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-[10px] font-bold" style={{ color: '#9CA3AF' }}>POTASSIUM</p>
-                                            <p className="font-black text-lg" style={{ color: '#1F2937' }}>{soilData.potassium.toFixed(2)}</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="text-[10px] font-bold" style={{ color: '#9CA3AF' }}>PH LEVEL</p>
-                                            <p className="font-black text-lg" style={{ color: '#1F2937' }}>{soilData.ph.toFixed(1)}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Certification Footer */}
-                            <div className="mt-12 pt-8 border-t flex justify-between items-end" style={{ borderColor: '#F3F4F6', opacity: 0.5 }}>
-                                <div>
-                                    <p className="text-[10px] font-bold" style={{ color: '#1F2937' }}>DIGITALLY GENERATED BY KRISHIBOT AI</p>
-                                    <p className="text-[8px]" style={{ color: '#6B7280' }}>Proprietary Ag-Intelligence Engine v2.0</p>
-                                </div>
-                                <div className="text-[8px] max-w-[300px] text-right" style={{ color: '#6B7280' }}>
-                                    Disclaimer: This diagnostic report is based on current forecast models and sensor data.
-                                    Agricultural results may vary based on unforeseen regional environmental changes.
-                                </div>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="p-10 text-center">
-                            <p className="text-lg font-bold text-gray-600">Report data not available</p>
-                            <p className="text-sm text-gray-400 mt-2">Please wait for forecast data to load</p>
                         </div>
                     )}
+
+                    {/* Certification Footer */}
+                    <div className="mt-12 pt-8 border-t flex justify-between items-end" style={{ borderColor: '#F3F4F6', opacity: 0.5 }}>
+                        <div>
+                            <p className="text-[10px] font-bold" style={{ color: '#1F2937' }}>DIGITALLY GENERATED BY KRISHIBOT AI</p>
+                            <p className="text-[8px]" style={{ color: '#6B7280' }}>Proprietary Ag-Intelligence Engine v2.0</p>
+                        </div>
+                        <div className="text-[8px] max-w-[300px] text-right" style={{ color: '#6B7280' }}>
+                            Disclaimer: This diagnostic report is based on current forecast models and sensor data.
+                            Agricultural results may vary based on unforeseen regional environmental changes.
+                        </div>
+                    </div>
                 </div>
             </div>
         </div >

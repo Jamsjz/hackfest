@@ -179,8 +179,8 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
           <AgriBot className="w-full h-full" />
         </div>
         <span className="absolute -top-1 -right-1 flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
         </span>
       </motion.button>
 
@@ -226,8 +226,8 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center mt-4 px-4">
-                    <button onClick={() => setInputValue("Analyze my crop health")} className="text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-full hover:bg-gray-50 text-gray-600 shadow-sm transition-colors">Analyze crop health</button>
-                    <button onClick={() => setInputValue("Will it rain tomorrow?")} className="text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-full hover:bg-gray-50 text-gray-600 shadow-sm transition-colors">Rain forecast?</button>
+                    <button onClick={() => setInputValue("Analyze my crop health")} className="text-xs glass-card-dark px-3 py-1.5 rounded-full hover:border-amber-500/30 text-zinc-400 transition-colors">Analyze crop health</button>
+                    <button onClick={() => setInputValue("Will it rain tomorrow?")} className="text-xs glass-card-dark px-3 py-1.5 rounded-full hover:border-amber-500/30 text-zinc-400 transition-colors">Rain forecast?</button>
                   </div>
                 </div>
               )}
@@ -270,7 +270,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
               <div className="flex gap-2">
                 <button
                   onClick={toggleListening}
-                  className={`p-3 rounded-full transition-colors flex-shrink-0 ${isListening ? 'bg-red-50 text-red-500 border border-red-100' : 'bg-gray-100 text-gray-500 border border-gray-100 hover:bg-gray-200'}`}
+                  className={`p-3 rounded-full transition-colors flex-shrink-0 ${isListening ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-white/5 text-zinc-500 border border-white/10 hover:bg-white/10'}`}
                   title="Speak in Nepali"
                 >
                   <Mic className="w-5 h-5" />

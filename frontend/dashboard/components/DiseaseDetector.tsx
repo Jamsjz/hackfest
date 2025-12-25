@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, X, Activity, AlertCircle, CheckCircle } from './ui/Icons';
+import { Camera, X, Activity, AlertCircle, CheckCircle, Upload, Sparkles } from './ui/Icons';
 import { analyzeImage } from '../../lib/gemini-service';
 import * as api from '../../lib/api-service';
 import { AnalysisResult } from '../types';
@@ -28,11 +28,11 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
 
   // Custom components for ReactMarkdown to ensure proper styling without prose plugin
   const markdownComponents: any = {
-    ul: ({ ...props }) => <ul className="list-disc pl-5 space-y-1 my-2" {...props} />,
-    ol: ({ ...props }) => <ol className="list-decimal pl-5 space-y-1 my-2" {...props} />,
+    ul: ({ ...props }) => <ul className="list-disc pl-5 space-y-1 my-2 text-zinc-300" {...props} />,
+    ol: ({ ...props }) => <ol className="list-decimal pl-5 space-y-1 my-2 text-zinc-300" {...props} />,
     li: ({ ...props }) => <li className="pl-1" {...props} />,
-    strong: ({ ...props }) => <span className="font-bold text-gray-900" {...props} />,
-    p: ({ ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+    strong: ({ ...props }) => <span className="font-bold text-white" {...props} />,
+    p: ({ ...props }) => <p className="mb-2 last:mb-0 text-zinc-300" {...props} />,
   };
   const [image, setImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -106,33 +106,9 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
 
   const renderContent = () => (
     <>
-      {/* Analysis Mode Toggle */}
-      <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
-        <div className="flex items-center gap-2">
-          {isBackendConnected ? (
-            <CheckCircle className="w-4 h-4 text-green-500" />
-          ) : (
-            <AlertCircle className="w-4 h-4 text-yellow-500" />
-          )}
-          <span className="text-xs font-medium text-gray-600">
-            {isBackendConnected ? 'ML Model Available' : 'Using AI Analysis'}
-          </span>
-        </div>
-        {isBackendConnected && (
-          <label className="flex items-center gap-2 cursor-pointer">
-            <span className="text-xs text-gray-500">Use ML Model</span>
-            <input
-              type="checkbox"
-              checked={useBackend}
-              onChange={(e) => setUseBackend(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
-            />
-          </label>
-        )}
-      </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
+        <div className="mb-4 p-3 glass-card-dark rounded-xl text-red-400 text-sm flex items-center gap-2 border border-red-500/20">
           <AlertCircle className="w-4 h-4" />
           {error}
         </div>
@@ -142,13 +118,13 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
         <div className="flex flex-col gap-4 py-4">
           <div
             onClick={() => cameraInputRef.current?.click()}
-            className="bg-gradient-to-br from-red-50 to-pink-50 border-2 border-dashed border-red-200 rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer hover:border-red-300 hover:shadow-lg hover:shadow-red-500/10 transition-all group"
+            className="glass-card-dark p-10 flex flex-col items-center justify-center cursor-pointer hover:border-amber-500/30 transition-all group"
           >
-            <div className="w-20 h-20 bg-white text-red-500 rounded-full flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
+            <div className="w-20 h-20 bg-gradient-to-br from-red-500/20 to-orange-500/20 text-red-400 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform border border-red-500/20">
               <Camera className="w-10 h-10" />
             </div>
-            <p className="text-red-900 font-bold text-lg">Take Photo</p>
-            <p className="text-red-600/70 text-sm">Use Camera to detect disease</p>
+            <p className="text-white font-bold text-lg">Take Photo</p>
+            <p className="text-zinc-500 text-sm">Use Camera to detect disease</p>
             <input
               ref={cameraInputRef}
               type="file"
@@ -159,16 +135,17 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
             />
           </div>
 
-          <div className="relative text-center">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
-            <span className="relative bg-white px-4 text-xs font-bold text-gray-400 uppercase">Or upload</span>
+          <div className="relative text-center my-2">
+            <div className="absolute inset-0 flex items-center"><div className="w-full divider-dark"></div></div>
+            <span className="relative bg-[#0d0d0f] px-4 text-xs font-bold text-zinc-600 uppercase">Or upload</span>
           </div>
 
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border border-gray-200 rounded-xl p-4 flex items-center justify-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors"
+            className="glass-card-dark p-4 flex items-center justify-center gap-2 cursor-pointer hover:border-white/10 transition-colors"
           >
-            <span className="text-gray-600 font-medium text-sm">Select from Gallery</span>
+            <Upload className="w-4 h-4 text-zinc-500" />
+            <span className="text-zinc-400 font-medium text-sm">Select from Gallery</span>
             <input
               ref={fileInputRef}
               type="file"
@@ -180,7 +157,7 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
         </div>
       ) : (
         <div className="space-y-5">
-          <div className="relative rounded-2xl overflow-hidden h-56 bg-gray-900 shadow-inner">
+          <div className="relative rounded-2xl overflow-hidden h-56 bg-zinc-900 border border-white/5">
             <img src={image} alt="Upload" className="w-full h-full object-contain mx-auto" />
             <button
               onClick={() => {
@@ -190,7 +167,7 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
                 setBackendResult(null);
                 setError(null);
               }}
-              className="absolute top-3 right-3 bg-black/50 text-white p-1.5 rounded-full hover:bg-black/70 backdrop-blur-sm transition-colors"
+              className="absolute top-3 right-3 bg-black/60 text-white p-2 rounded-full hover:bg-black/80 backdrop-blur-sm transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -199,7 +176,7 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
           {!result && !analyzing && (
             <button
               onClick={handleAnalyze}
-              className="w-full py-4 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-xl font-bold hover:shadow-lg hover:shadow-red-500/30 transition-all transform active:scale-95"
+              className="w-full py-4 bg-gradient-to-r from-red-600 to-orange-500 text-white rounded-xl font-bold hover:shadow-lg hover:shadow-red-500/20 transition-all transform active:scale-95"
             >
               {useBackend && isBackendConnected ? 'Analyze with ML Model' : 'Analyze with AI'}
             </button>
@@ -208,14 +185,14 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
           {analyzing && (
             <div className="text-center py-8 space-y-4">
               <div className="relative w-16 h-16 mx-auto">
-                <div className="absolute inset-0 border-4 border-red-100 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-zinc-800 rounded-full"></div>
                 <div className="absolute inset-0 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
               </div>
               <div>
-                <p className="text-gray-800 font-bold">
+                <p className="text-white font-bold">
                   {useBackend && isBackendConnected ? 'Running ML Model...' : 'Scanning leaf patterns...'}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-zinc-500 mt-1">
                   {useBackend && isBackendConnected
                     ? 'Using trained disease detection model'
                     : 'Checking against 50+ disease models'
@@ -231,29 +208,26 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
             >
-              <div className="bg-white/40 backdrop-blur-md rounded-2xl p-5 border border-white/20 shadow-lg space-y-3">
+              <div className="glass-card-dark p-5 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-xl text-red-900">{result.title}</h4>
+                  <h4 className="font-bold text-xl text-white">{result.title}</h4>
                   <div className="flex items-center gap-2">
                     {backendResult && (
-                      <span className="bg-green-100 px-2 py-1 rounded-md text-xs font-bold text-green-700 border border-green-200">
+                      <span className="badge-success-dark text-[10px]">
                         ML Model
                       </span>
                     )}
-                    <span className="bg-white px-2.5 py-1 rounded-md text-xs font-bold text-red-700 border border-red-200 shadow-sm">
-                      {(result.confidence * 100).toFixed(0)}% Match
-                    </span>
                   </div>
                 </div>
-                <div className="text-sm text-red-800/80 leading-relaxed font-medium prose prose-sm prose-red max-w-none">
+                <div className="text-sm text-zinc-400 leading-relaxed">
                   <ReactMarkdown components={markdownComponents}>{result.description}</ReactMarkdown>
                 </div>
 
-                <div className="bg-white/50 backdrop-blur-sm p-4 rounded-xl border border-white/20 shadow-sm">
-                  <p className="text-xs font-bold text-red-600 uppercase tracking-wider mb-2 flex items-center gap-1">
+                <div className="glass-card-dark p-4 border-amber-500/20">
+                  <p className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-1">
                     <Activity className="w-3 h-3" /> Recommended Treatment
                   </p>
-                  <div className="text-sm text-gray-700 prose prose-sm max-w-none">
+                  <div className="text-sm text-zinc-300">
                     <ReactMarkdown components={markdownComponents}>{result.recommendation}</ReactMarkdown>
                   </div>
                 </div>
@@ -268,13 +242,13 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
 
   if (isPage) {
     return (
-      <div className="w-full max-w-2xl mx-auto h-full flex flex-col bg-white/60 backdrop-blur-lg rounded-3xl shadow-xl border border-white/30 overflow-hidden">
-        <div className="flex justify-between items-center p-5 border-b border-white/10 flex-shrink-0 bg-transparent z-10">
-          <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Activity className="text-red-500 w-6 h-6" /> Plant Doctor
+      <div className="w-full max-w-2xl mx-auto h-full flex flex-col glass-card-dark rounded-2xl overflow-hidden">
+        <div className="flex justify-between items-center p-5 border-b border-white/5 flex-shrink-0">
+          <h3 className="text-xl font-bold text-white flex items-center gap-2">
+            <Activity className="text-red-400 w-6 h-6" /> Plant Doctor
           </h3>
         </div>
-        <div className="p-6 overflow-y-auto custom-scrollbar bg-transparent flex-1">
+        <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
           {renderContent()}
         </div>
       </div>
@@ -286,25 +260,25 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xl"
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0, y: 10 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 10 }}
         transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-        className="bg-white/70 backdrop-blur-xl w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col relative border border-white/30"
+        className="glass-card-dark w-full max-w-lg rounded-2xl overflow-hidden max-h-[85vh] flex flex-col relative"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center p-5 border-b border-white/10 flex-shrink-0 bg-transparent z-10">
-          <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Activity className="text-red-500 w-6 h-6" /> Plant Doctor
+        <div className="flex justify-between items-center p-5 border-b border-white/5 flex-shrink-0">
+          <h3 className="text-xl font-bold text-white flex items-center gap-2">
+            <Activity className="text-red-400 w-6 h-6" /> Plant Doctor
           </h3>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            <X className="w-5 h-5 text-gray-500" />
+          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors">
+            <X className="w-5 h-5 text-zinc-500" />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto custom-scrollbar bg-transparent">
+        <div className="p-6 overflow-y-auto custom-scrollbar">
           {renderContent()}
         </div>
       </motion.div>
