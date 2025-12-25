@@ -137,10 +137,27 @@ async def get_weather_data(
             soil_response.raise_for_status()
             soil_data = soil_response.json()
 
-        ph = float(soil_data.get("ph", "0.0").strip())
-        N = float(soil_data.get("total_nitrogen", "0.0 %").replace("%", "").strip())
-        P = float(soil_data.get("p2o5", "0.0 kg/ha").replace("kg/ha", "").strip())
-        K = float(soil_data.get("potassium", "0.0 kg/ha").replace("kg/ha", "").strip())
+        import re
+        
+        ph_raw = str(soil_data.get("ph", "0.0"))
+        # Extract float from string like "6.5" or " 6.5 "
+        ph_match = re.search(r"[-+]?\d*\.\d+|\d+", ph_raw)
+        ph = float(ph_match.group()) if ph_match else 0.0
+
+        n_raw = str(soil_data.get("total_nitrogen", "0.0"))
+        # Extract float from "0.12 %" or "0.12"
+        n_match = re.search(r"[-+]?\d*\.\d+|\d+", n_raw)
+        N = float(n_match.group()) if n_match else 0.0
+
+        p_raw = str(soil_data.get("p2o5", "0.0"))
+        # Extract float from "45 kg/ha"
+        p_match = re.search(r"[-+]?\d*\.\d+|\d+", p_raw)
+        P = float(p_match.group()) if p_match else 0.0
+
+        k_raw = str(soil_data.get("potassium", "0.0"))
+        # Extract float from "180 kg/ha"
+        k_match = re.search(r"[-+]?\d*\.\d+|\d+", k_raw)
+        K = float(k_match.group()) if k_match else 0.0
 
         soil_data_for_rec = {"ph": ph, "nitrogen": N, "phosphorus": P, "potassium": K}
 
