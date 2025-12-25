@@ -133,26 +133,24 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden bg-gray-50">
+    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden bg-[#0d0d0f]">
       {/* Background Elements */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         {/* Gradient Blobs */}
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-agri-400/20 blur-[100px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-sky-400/20 blur-[100px]"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[100px]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-orange-500/10 blur-[100px]"></div>
         {/* Pattern Overlay */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23000000\' fill-opacity=\'1\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")' }}></div>
+        <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")' }}></div>
       </div>
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-10 border border-white/30 bg-white/40 backdrop-blur-xl"
+        className="w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-10 glass-card-dark"
       >
         {/* Left Panel - Welcome */}
-        <div className="md:w-5/12 relative flex flex-col justify-between p-10 bg-agri-700 text-white overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-agri-600 via-agri-700 to-agri-800 opacity-100"></div>
-
+        <div className="md:w-5/12 relative flex flex-col justify-between p-10 bg-gradient-to-br from-amber-600 via-orange-500 to-amber-600 text-white overflow-hidden">
           {/* Decorative Glass Elements */}
           <div className="absolute top-[-20%] right-[-20%] w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute bottom-[-20%] left-[-20%] w-64 h-64 bg-black/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -164,9 +162,9 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
 
             <h1 className="text-4xl font-bold mb-4 tracking-tight text-shadow-sm">
               Welcome to <br />
-              <span className="text-agri-200">KrishiBot</span>
+              <span className="text-amber-100">KrishiBot</span>
             </h1>
-            <p className="text-agri-50/90 text-lg leading-relaxed font-light mb-8">
+            <p className="text-white/80 text-lg leading-relaxed font-light mb-8">
               Your AI-powered precision agriculture companion.
             </p>
 
@@ -189,80 +187,78 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
             <div className="grid grid-cols-3 gap-2 border-t border-white/10 pt-8">
               <div className="flex flex-col items-center gap-2 group">
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/10 group-hover:bg-white/20 transition-all">
-                  <Leaf className="w-5 h-5 text-agri-100" />
+                  <Leaf className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-[10px] font-medium text-agri-100 uppercase tracking-widest">Crops</span>
+                <span className="text-[10px] font-medium text-white/80 uppercase tracking-widest">Crops</span>
               </div>
               <div className="flex flex-col items-center gap-2 group">
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/10 group-hover:bg-white/20 transition-all">
-                  <CloudRain className="w-5 h-5 text-agri-100" />
+                  <CloudRain className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-[10px] font-medium text-agri-100 uppercase tracking-widest">Weather</span>
+                <span className="text-[10px] font-medium text-white/80 uppercase tracking-widest">Weather</span>
               </div>
               <div className="flex flex-col items-center gap-2 group">
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/10 group-hover:bg-white/20 transition-all">
-                  <Activity className="w-5 h-5 text-agri-100" />
+                  <Activity className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-[10px] font-medium text-agri-100 uppercase tracking-widest">AI Insights</span>
+                <span className="text-[10px] font-medium text-white/80 uppercase tracking-widest">AI Insights</span>
               </div>
             </div>
           </div>
 
           <div className="relative z-10 mt-auto pt-8">
-            <p className="text-xs text-agri-200/60 font-mono">v1.0.0 • Precision Agriculture</p>
+            <p className="text-xs text-white/50 font-mono">v1.0.0 • Precision Agriculture</p>
           </div>
         </div>
 
         {/* Right Panel - Inputs */}
-        <div className="md:w-7/12 p-8 md:p-12 bg-white/40 backdrop-blur-md">
+        <div className="md:w-7/12 p-8 md:p-12 bg-[#0d0d0f]">
           <div className="space-y-8">
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-gray-800">Setup Profile</h3>
-              <p className="text-gray-500">Let's personalize your farming experience.</p>
+              <h3 className="text-2xl font-bold text-white">Setup Profile</h3>
+              <p className="text-zinc-500">Let's personalize your farming experience.</p>
             </div>
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
+              <div className="p-3 glass-card-dark rounded-xl text-red-400 text-sm flex items-center gap-2 border-red-500/20">
                 <AlertCircle className="w-4 h-4" />
                 {error}
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Your Name</label>
+              <label className="block text-sm font-bold text-zinc-400 mb-2 ml-1">Your Name</label>
               <div className="relative group">
                 <input
                   type="text"
                   placeholder="e.g. Ram Bahadur"
-                  className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-agri-500/20 focus:border-agri-500 outline-none transition-all text-gray-900 placeholder-gray-400 shadow-sm"
-
+                  className="w-full pl-14 pr-4 py-4 input-dark rounded-2xl text-white"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
-                <User className="w-5 h-5 text-agri-600 absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none transition-colors group-focus-within:text-agri-700" />
+                <User className="w-5 h-5 text-amber-500 absolute left-5 top-1/2 transform -translate-y-1/2 pointer-events-none transition-colors group-focus-within:text-amber-400" />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Farm Location</label>
+              <label className="block text-sm font-bold text-zinc-400 mb-2 ml-1">Farm Location</label>
               <div className="space-y-4">
                 <div className="relative flex gap-3">
                   <div className="relative flex-1 group">
                     <input
                       type="text"
                       placeholder="Search (e.g. Chitwan)"
-                      className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-agri-500/20 focus:border-agri-500 outline-none transition-all text-gray-900 placeholder-gray-400 shadow-sm"
-
+                      className="w-full pl-14 pr-4 py-4 input-dark rounded-2xl text-white"
                       value={locationName}
                       onChange={(e) => setLocationName(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     />
-                    <MapPin className="w-5 h-5 text-agri-600 absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none transition-colors group-focus-within:text-agri-700" />
+                    <MapPin className="w-5 h-5 text-amber-500 absolute left-5 top-1/2 transform -translate-y-1/2 pointer-events-none transition-colors group-focus-within:text-amber-400" />
                   </div>
                   <button
                     onClick={handleSearch}
                     disabled={isSearching}
-                    className="bg-agri-600 hover:bg-agri-700 text-white p-4 rounded-2xl transition-all shadow-lg shadow-agri-600/30 disabled:opacity-70 disabled:shadow-none flex-shrink-0"
+                    className="btn-accent-dark p-4 rounded-2xl disabled:opacity-70 flex-shrink-0"
                   >
                     {isSearching ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -272,7 +268,7 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
                   </button>
                 </div>
 
-                <div className="h-48 rounded-2xl overflow-hidden border border-gray-200 shadow-inner relative ring-4 ring-white">
+                <div className="h-48 rounded-2xl overflow-hidden border border-white/10 shadow-inner relative">
                   <MapWidget
                     mode="pick"
                     initialLat={locationCoords?.lat || defaultLat}
@@ -283,7 +279,7 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
                   <button
                     onClick={handleGetCurrentLocation}
                     type="button"
-                    className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm hover:bg-white text-agri-700 p-2.5 rounded-xl shadow-lg z-[400] border border-white/50 flex items-center gap-2 text-xs font-bold transition-all transform hover:scale-105 active:scale-95"
+                    className="absolute top-4 right-4 glass-card-dark hover:border-amber-500/30 text-amber-400 p-2.5 rounded-xl shadow-lg z-[400] flex items-center gap-2 text-xs font-bold transition-all transform hover:scale-105 active:scale-95"
                     title="Set my current location"
                   >
                     <Navigation className="w-4 h-4" />
@@ -292,14 +288,14 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
 
 
                   {locationCoords && (
-                    <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-mono text-agri-800 shadow-lg border border-agri-100 z-[500] flex items-center gap-2">
-                      <MapPin className="w-3 h-3 text-agri-600" />
+                    <div className="absolute bottom-3 left-3 glass-card-dark px-3 py-1.5 rounded-lg text-xs font-mono text-amber-400 shadow-lg z-[500] flex items-center gap-2">
+                      <MapPin className="w-3 h-3 text-amber-500" />
                       {locationCoords.lat.toFixed(4)}, {locationCoords.lng.toFixed(4)}
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-gray-500 ml-1 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-agri-500 inline-block"></span>
+                <p className="text-xs text-zinc-600 ml-1 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span>
                   Auto-search or pin manually on the satellite map.
                 </p>
               </div>
@@ -309,7 +305,7 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
               <button
                 onClick={handleSubmit}
                 disabled={!username || (!locationName && !locationCoords) || isSubmitting}
-                className="bg-gradient-to-r from-agri-600 to-agri-500 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:shadow-xl hover:shadow-agri-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                className="btn-accent-dark px-8 py-4 rounded-2xl font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>
