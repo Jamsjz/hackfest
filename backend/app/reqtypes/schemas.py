@@ -6,8 +6,8 @@ from decimal import Decimal
 
 class UserBase(BaseModel):
     username: str
-    latitude: condecimal(max_digits=10, decimal_places=7)  # type: ignore
-    longitude: condecimal(max_digits=10, decimal_places=7)  # type: ignore
+    latitude: float
+    longitude: float
 
 
 class DiseaseBase(BaseModel):
@@ -42,8 +42,8 @@ class UserIn(BaseModel):
 class UserUpdate(BaseModel):
     current_username: str
     new_username: Optional[str] = None
-    latitude: Optional[condecimal(max_digits=10, decimal_places=7)] = None  # type: ignore
-    longitude: Optional[condecimal(max_digits=10, decimal_places=7)] = None  # type: ignore
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 
 class SoilTypePredictionBase(BaseModel):
@@ -108,3 +108,15 @@ class UserOut(UserBase):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class ChatMessage(BaseModel):
+    role: str
+    text: str
+
+
+class ChatRequest(BaseModel):
+    history: List[ChatMessage]
+    message: str
+    context: Optional[str] = None
+
