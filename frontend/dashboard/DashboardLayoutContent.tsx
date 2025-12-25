@@ -40,7 +40,6 @@ export default function DashboardLayoutContent({ children }: { children: React.R
         if (pathname === '/dashboard/crop-wizard') return "Add New Crop";
         if (pathname === '/dashboard/detect') return "Disease Detection";
         if (pathname === '/dashboard/test') return "Soil Quality Analysis";
-
         if (pathname === '/dashboard/forum') return "Kisan Sangha";
         return "Dashboard";
     };
@@ -91,7 +90,6 @@ export default function DashboardLayoutContent({ children }: { children: React.R
                                     path="/dashboard/test"
                                     active={pathname === '/dashboard/test' || pathname.startsWith('/dashboard/test')}
                                 />
-
                                 <SidebarItem
                                     icon={MessageSquare}
                                     label="Forum"
