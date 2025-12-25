@@ -37,6 +37,7 @@ export interface BackendWeatherData {
     };
     hourlyData?: api.WeatherHourly[];
     dailyData?: api.WeatherDaily[];
+    agriForecast?: any[]; // Using any[] for simplicity or import AgriForecastDay
 }
 
 interface DashboardContextType {
@@ -74,7 +75,19 @@ interface DashboardContextType {
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
 
 export const DashboardProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<ExtendedUserProfile | null>(null);
+    const [user, setUser] = useState<ExtendedUserProfile | null>(() => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('krishibot_user');
+            if (stored) {
+                try {
+                    return JSON.parse(stored);
+                } catch (e) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    });
     const [crops, setCrops] = useState<CropData[]>([]);
     const [activeCropId, setActiveCropId] = useState<string | null>(null);
 
@@ -112,7 +125,10 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
         setWeatherError(null);
 
         try {
-            const data = await api.getWeatherData(user.username);
+            const activeCrop = crops.find(c => c.id === activeCropId);
+            const cropName = activeCrop ? activeCrop.name : "Rice";
+
+            const data = await api.getWeatherData(user.username, cropName);
 
             // Process the weather data
             const todayData = data.daily?.[0];
@@ -132,6 +148,7 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
                 soilData: data.soil_data,
                 hourlyData: data.hourly,
                 dailyData: data.daily,
+                agriForecast: data.agri_forecast, // Add forecast data
             });
         } catch (error) {
             console.error('Failed to fetch weather:', error);
@@ -218,7 +235,18 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
         setActiveCropId(null);
         setWeather(null);
         setCropRecommendations([]);
+        localStorage.removeItem('krishibot_user');
+        document.cookie = `username=; path=/; max-age=0`;
     };
+
+    // Save user to localStorage whenever it changes
+    useEffect(() => {
+        if (user) {
+            localStorage.setItem('krishibot_user', JSON.stringify(user));
+            // Set cookie for backend auth (1 year expiry)
+            document.cookie = `username=${user.username}; path=/; max-age=31536000`;
+        }
+    }, [user]);
 
     // Fetch weather when user logs in
     useEffect(() => {

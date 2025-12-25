@@ -3,7 +3,7 @@
  * Connects frontend components to the FastAPI backend
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /**
  * Generic fetch wrapper with error handling
@@ -198,13 +198,14 @@ export interface WeatherResponse {
         total_rainfall: number;
     };
     soil_data: SoilData;
+    agri_forecast?: any[]; // Array of Ag forecast objects
 }
 
 /**
  * Get weather and soil data for the current user
  */
-export async function getWeatherData(username: string): Promise<WeatherResponse> {
-    return apiRequest<WeatherResponse>(`/weather/?username=${encodeURIComponent(username)}`);
+export async function getWeatherData(username: string, crop: string = "Rice"): Promise<WeatherResponse> {
+    return apiRequest<WeatherResponse>(`/weather/?username=${encodeURIComponent(username)}&crop=${encodeURIComponent(crop)}`);
 }
 
 // =============================================================================
@@ -386,4 +387,107 @@ export async function sendChatMessage(history: ChatMessage[], message: string, c
     });
 
     return result.response;
+}
+
+// =============================================================================
+// FORUM API
+// =============================================================================
+
+export interface ForumUser {
+    id: number;
+    username: string;
+    is_expert: boolean;
+}
+
+export interface ForumAnswer {
+    id: number;
+    content: string;
+    created_at: string;
+    user_id: number;
+    question_id: number;
+    user: ForumUser;
+    upvotes: number;
+    downvotes: number;
+}
+
+export interface ForumQuestion {
+    id: number;
+    title: string;
+    content: string;
+    image_path?: string;
+    created_at: string;
+    user_id: number;
+    user: ForumUser;
+    upvotes: number;
+    answers_count: number;
+}
+
+export interface ForumQuestionDetail extends ForumQuestion {
+    answers: ForumAnswer[];
+}
+
+/**
+ * Get forum questions with filtering and sorting
+ */
+export async function getForumQuestions(filter: string = 'all', sortBy: string = 'newest'): Promise<ForumQuestion[]> {
+    return apiRequest<ForumQuestion[]>(`/forum/questions?filter_type=${filter}&sort_by=${sortBy}`);
+}
+
+/**
+ * Get a single question with its answers
+ */
+export async function getForumQuestionDetail(questionId: number): Promise<ForumQuestionDetail> {
+    return apiRequest<ForumQuestionDetail>(`/forum/questions/${questionId}`);
+}
+
+/**
+ * Create a new forum question
+ */
+export async function createForumQuestion(title: string, content: string, image?: File): Promise<ForumQuestion> {
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', content);
+    if (image) formData.append('image', image);
+
+    const response = await fetch(`${API_BASE_URL}/forum/questions`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Failed to create question');
+    }
+
+    return await response.json();
+}
+
+/**
+ * Upvote a question
+ */
+export async function voteQuestion(questionId: number): Promise<void> {
+    await apiRequest<void>(`/forum/questions/${questionId}/vote`, {
+        method: 'POST',
+    });
+}
+
+/**
+ * Post an answer to a question
+ */
+export async function postAnswer(questionId: number, content: string): Promise<ForumAnswer> {
+    return apiRequest<ForumAnswer>(`/forum/questions/${questionId}/answer`, {
+        method: 'POST',
+        body: JSON.stringify({ content }),
+    });
+}
+
+/**
+ * Vote on an answer
+ */
+export async function voteAnswer(answerId: number, voteType: number): Promise<void> {
+    await apiRequest<void>(`/forum/answers/${answerId}/vote`, {
+        method: 'POST',
+        body: JSON.stringify({ vote_type: voteType }),
+    });
 }

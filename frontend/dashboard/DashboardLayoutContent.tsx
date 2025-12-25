@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Script from 'next/script';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Leaf, Activity, FileText, Layers, LayoutGrid, Bug } from './components/ui/Icons';
+import { Leaf, Activity, FileText, Layers, LayoutGrid, Bug, MessageSquare } from './components/ui/Icons';
 import UserSetup from './components/UserSetup';
 import UserProfilePanel from './components/UserProfilePanel';
 import VoiceAssistant from './components/VoiceAssistant';
@@ -41,6 +41,7 @@ export default function DashboardLayoutContent({ children }: { children: React.R
         if (pathname === '/dashboard/detect') return "Disease Detection";
         if (pathname === '/dashboard/test') return "Soil Quality Analysis";
         if (pathname === '/dashboard/generate') return "Farming Reports";
+        if (pathname === '/dashboard/forum') return "Kisan Sangha";
         return "Dashboard";
     };
 
@@ -96,6 +97,12 @@ export default function DashboardLayoutContent({ children }: { children: React.R
                                     path="/dashboard/generate"
                                     active={pathname === '/dashboard/generate' || pathname.startsWith('/dashboard/generate')}
                                 />
+                                <SidebarItem
+                                    icon={MessageSquare}
+                                    label="Forum"
+                                    path="/dashboard/forum"
+                                    active={pathname === '/dashboard/forum' || pathname.startsWith('/dashboard/forum')}
+                                />
                             </div>
                         </aside>
 
@@ -135,7 +142,7 @@ export default function DashboardLayoutContent({ children }: { children: React.R
                                 <SidebarItem icon={LayoutGrid} label="Dashboard" path="/dashboard" active={pathname === '/dashboard'} />
                                 <SidebarItem icon={Bug} label="Detect" path="/dashboard/detect" active={pathname === '/dashboard/detect' || pathname.startsWith('/dashboard/detect')} />
                                 <SidebarItem icon={Layers} label="Test" path="/dashboard/test" active={pathname === '/dashboard/test' || pathname.startsWith('/dashboard/test')} />
-                                <SidebarItem icon={FileText} label="Generate" path="/dashboard/generate" active={pathname === '/dashboard/generate' || pathname.startsWith('/dashboard/generate')} />
+                                <SidebarItem icon={MessageSquare} label="Forum" path="/dashboard/forum" active={pathname === '/dashboard/forum' || pathname.startsWith('/dashboard/forum')} />
                             </div>
                         </main>
 

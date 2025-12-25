@@ -6,8 +6,9 @@ from decimal import Decimal
 
 class UserBase(BaseModel):
     username: str
-    latitude: float
-    longitude: float
+    is_expert: bool = False
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 
 class DiseaseBase(BaseModel):
@@ -119,4 +120,64 @@ class ChatRequest(BaseModel):
     history: List[ChatMessage]
     message: str
     context: Optional[str] = None
+
+
+# --- Forum Models ---
+
+class UserMini(BaseModel):
+    id: int
+    username: str
+    is_expert: bool = False
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AnswerBase(BaseModel):
+    content: str
+
+
+class AnswerCreate(AnswerBase):
+    pass
+
+
+class AnswerOut(AnswerBase):
+    id: int
+    created_at: datetime
+    user_id: int
+    question_id: int
+    user: UserMini
+    upvotes: int = 0
+    downvotes: int = 0
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class QuestionBase(BaseModel):
+    title: str
+    content: str
+
+
+class QuestionCreate(QuestionBase):
+    pass
+
+
+class QuestionOut(QuestionBase):
+    id: int
+    image_path: Optional[str] = None
+    created_at: datetime
+    user_id: int
+    user: UserMini
+    upvotes: int = 0
+    answers_count: int = 0
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class QuestionDetailOut(QuestionOut):
+    answers: List[AnswerOut] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AnswerVoteIn(BaseModel):
+    vote_type: int  # 1 for up, -1 for down
 

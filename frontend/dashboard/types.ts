@@ -22,6 +22,18 @@ export interface UserProfile {
   };
 }
 
+export interface AgriForecastDay {
+  day_index: number;
+  date: string;
+  gdd: number;
+  accumulated_gdd: number;
+  crop_stage: string;
+  risks: Array<{ type: string; severity: string; desc: string }>;
+  t_max: number;
+  t_min: number;
+  et0: number;
+}
+
 export interface WeatherData {
   tempMax: number;
   tempMin: number;
@@ -30,6 +42,9 @@ export interface WeatherData {
   windSpeed: number;
   soilMoisture: number;
   condition: 'Sunny' | 'Cloudy' | 'Rainy' | 'Stormy';
+  agriForecast?: AgriForecastDay[]; // New field
+  dailyData?: any[]; // Keep existing daily support
+  soilData?: any;
 }
 
 export interface ChatMessage {
