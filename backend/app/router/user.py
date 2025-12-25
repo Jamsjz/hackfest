@@ -24,8 +24,10 @@ async def register_user(
 
     new_user_db = models.User(
         username=new_user.username,
-        latitude=new_user.latitude,
-        longitude=new_user.longitude,
+        # latitude=new_user.latitude,
+        # longitude=new_user.longitude,
+        latitude=28.573,
+        longitude=80.806,
     )
     db.add(new_user_db)
     await db.commit()

@@ -18,8 +18,8 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
-    latitude = Column(Numeric(10, 7), nullable=False)
-    longitude = Column(Numeric(10, 7), nullable=False)
+    latitude = 28.573
+    longitude = 80.806
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships to other systems
