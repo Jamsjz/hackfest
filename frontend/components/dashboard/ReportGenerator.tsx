@@ -3,21 +3,24 @@ import { motion } from 'framer-motion';
 import { FileText, Leaf, CloudRain } from './ui/Icons';
 import ContextualChat from './ContextualChat';
 import { CropData } from '../../lib/dashboard-types';
+import { useDashboard } from '@/dashboard/DashboardContext';
+
 
 interface ReportGeneratorProps {
     crops: CropData[];
 }
 
 const ReportGenerator: React.FC<ReportGeneratorProps> = ({ crops }) => {
+    const { weather, user } = useDashboard();
+
     // Generate a summary context for the AI
     const reportContext = `
-    FARM REPORT SUMMARY:
+    FARM REPORT SUMMARY for ${user?.username || "Guest"}:
     Total Crops: ${crops.length}
     Crops: ${crops.map(c => `${c.name} (${c.area} ${c.areaUnit})`).join(', ')}
-    Current Weather: Sunny, 28°C
-    Soil Status: Good moisture levels (42%)
-    Risks: Low water stress, Medium disease risk.
-    Recommendations: Monitor for pests in late vegetative stage.
+    Current Weather: ${weather ? `${weather.condition}, ${weather.tempMax}°C` : "N/A"}
+    Soil Status: ${weather?.soilMoisture ? `${weather.soilMoisture}% moisture` : "N/A"}
+    Location: ${user?.locationName || "Unknown"}
   `;
 
     return (
