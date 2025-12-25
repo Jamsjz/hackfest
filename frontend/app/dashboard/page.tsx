@@ -29,6 +29,7 @@ export default function DashboardPage() {
         windSpeed: weather.windSpeed,
         soilMoisture: weather.soilMoisture,
         condition: weather.condition,
+        agriForecast: weather.agriForecast, // Pass forecast data to Dashboard
     } : {
         // Fallback mock data
         tempMax: 28,
@@ -39,6 +40,7 @@ export default function DashboardPage() {
         soilMoisture: 42,
         condition: 'Sunny' as const,
     };
+
 
     const activeCrop = crops.find(c => c.id === activeCropId);
 
