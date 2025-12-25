@@ -1,7 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, CloudRain, Thermometer, Wind, AlertCircle, Droplets, Zap, Leaf, Activity, Bug, RefreshCw, Sparkles, Layers, Cloud, FileText } from './ui/Icons';
+import { Sun, CloudRain, Thermometer, Wind, AlertCircle, Droplets, Zap, Leaf, Activity, Bug, RefreshCw, Sparkles, Layers, Cloud, FileText, Download, Eye, Check, X } from './ui/Icons';
 import { AgriForecast, CropData, AgriForecastDay } from '../types';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface ForecastingHubProps {
     forecast: AgriForecast;
@@ -28,9 +30,212 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
 }) => {
     const [dayIndex, setDayIndex] = useState(0);
     const [activeTab, setActiveTab] = useState<'simulation' | 'summary' | 'recommendations'>('simulation');
+    const [reportStatus, setReportStatus] = useState<'idle' | 'generating' | 'ready'>('idle');
+    const [reportImageUrl, setReportImageUrl] = useState<string | null>(null);
+    const [showReportModal, setShowReportModal] = useState(false);
+    const reportRef = useRef<HTMLDivElement>(null);
 
     const currentDay = forecast.daily?.[dayIndex];
     const fullSummary = forecast.summary;
+
+    const generateReport = async () => {
+        if (!reportRef.current) {
+            console.error("Report template not available. Please ensure forecast data is loaded.");
+            alert("Unable to generate report. Please ensure forecast data is loaded and try again.");
+            return;
+        }
+
+        if (!currentDay || !dynamicSummary) {
+            console.error("Missing forecast data: currentDay or dynamicSummary is null");
+            alert("Unable to generate report. Forecast data is incomplete. Please wait for data to load.");
+            return;
+        }
+
+        setReportStatus('generating');
+
+        try {
+            // Give time for any reactive styles to settle
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            const canvas = await html2canvas(reportRef.current, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                // This is crucial: html2canvas fails on modern lab()/oklch()/lch() colors.
+                // We sanitize the cloned document before rendering.
+                onclone: (clonedDoc) => {
+                    // Helper function to replace unsupported color functions
+                    const sanitizeColor = (text: string): string => {
+                        if (!text) return text;
+                        // Replace lab(), oklch(), lch(), and other unsupported color functions
+                        // Use a more comprehensive regex that handles:
+                        // - lab(percentage percentage percentage)
+                        // - oklch(percentage percentage hue)
+                        // - lch(lightness chroma hue)
+                        // - color-mix(...)
+                        // Match with word boundaries and handle nested parentheses
+                        let sanitized = text;
+                        // Multiple passes to catch all variations
+                        const colorFunctionPattern = /\b(lab|oklch|lch|color-mix)\s*\([^)]*\)/gi;
+                        let previousText = '';
+                        let iterations = 0;
+                        // Keep replacing until no more matches (handles nested cases)
+                        while (sanitized !== previousText && iterations < 10) {
+                            previousText = sanitized;
+                            sanitized = sanitized.replace(colorFunctionPattern, '#4B5563');
+                            iterations++;
+                        }
+                        return sanitized;
+                    };
+
+                    // 1. Sanitize all style tags by replacing lab/oklch/lch with a safe HEX fallback
+                    // This includes styles in head, body, and anywhere else
+                    clonedDoc.querySelectorAll('style').forEach(tag => {
+                        if (tag.textContent) {
+                            tag.textContent = sanitizeColor(tag.textContent);
+                        }
+                        // Also check innerHTML as a fallback
+                        if (tag.innerHTML) {
+                            tag.innerHTML = sanitizeColor(tag.innerHTML);
+                        }
+                    });
+
+                    // 2. Sanitize inline styles on all elements
+                    clonedDoc.querySelectorAll('*').forEach((element: Element) => {
+                        const htmlElement = element as HTMLElement;
+                        if (htmlElement.style && htmlElement.style.cssText) {
+                            htmlElement.style.cssText = sanitizeColor(htmlElement.style.cssText);
+                        }
+                        // Also check individual style properties
+                        const style = htmlElement.style;
+                        for (let i = 0; i < style.length; i++) {
+                            const prop = style[i];
+                            const value = style.getPropertyValue(prop);
+                            if (value && /(lab|oklch|lch|color-mix)\(/i.test(value)) {
+                                style.setProperty(prop, '#4B5563', style.getPropertyPriority(prop));
+                            }
+                        }
+                    });
+
+                    // 3. Remove all external link stylesheets which often contain the offending colors
+                    // and cause the html2canvas internal parser to crash.
+                    clonedDoc.querySelectorAll('link[rel="stylesheet"]').forEach(l => l.remove());
+
+                    // 4. Sanitize all elements' inline styles more aggressively
+                    clonedDoc.querySelectorAll('*').forEach((element: Element) => {
+                        const htmlElement = element as HTMLElement;
+                        if (htmlElement.hasAttribute('style')) {
+                            const originalStyle = htmlElement.getAttribute('style') || '';
+                            const sanitizedStyle = sanitizeColor(originalStyle);
+                            if (sanitizedStyle !== originalStyle) {
+                                htmlElement.setAttribute('style', sanitizedStyle);
+                            }
+                        }
+                        // Also sanitize style object directly
+                        if (htmlElement.style && htmlElement.style.cssText) {
+                            const cssText = htmlElement.style.cssText;
+                            if (/(lab|oklch|lch|color-mix)\(/i.test(cssText)) {
+                                htmlElement.style.cssText = sanitizeColor(cssText);
+                            }
+                        }
+                    });
+
+                    // 5. Inject a dedicated "Safe Layout" stylesheet to ensure the report template 
+                    // retains its structure even after external styles are removed.
+                    const reportLayout = clonedDoc.createElement('style');
+                    reportLayout.textContent = `
+                        .flex { display: flex !important; }
+                        .grid { display: grid !important; }
+                        .flex-col { flex-direction: column !important; }
+                        .justify-between { justify-content: space-between !important; }
+                        .items-start { align-items: flex-start !important; }
+                        .items-center { align-items: center !important; }
+                        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+                        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+                        .gap-3 { gap: 0.75rem !important; }
+                        .gap-4 { gap: 1rem !important; }
+                        .gap-6 { gap: 1.5rem !important; }
+                        .gap-8 { gap: 2rem !important; }
+                        .space-y-3 > * + * { margin-top: 0.75rem !important; }
+                        .space-y-4 > * + * { margin-top: 1rem !important; }
+                        .p-3 { padding: 0.75rem !important; }
+                        .p-4 { padding: 1rem !important; }
+                        .p-5 { padding: 1.25rem !important; }
+                        .p-10 { padding: 2.5rem !important; }
+                        .px-10 { padding-left: 2.5rem !important; padding-right: 2.5rem !important; }
+                        .pb-6 { padding-bottom: 1.5rem !important; }
+                        .pt-4 { padding-top: 1rem !important; }
+                        .pt-6 { padding-top: 1.5rem !important; }
+                        .pt-8 { padding-top: 2rem !important; }
+                        .pl-2 { padding-left: 0.5rem !important; }
+                        .mb-1 { margin-bottom: 0.25rem !important; }
+                        .mb-4 { margin-bottom: 1rem !important; }
+                        .mb-8 { margin-bottom: 2rem !important; }
+                        .max-w-\[300px\] { max-width: 300px !important; }
+                        .rounded-lg { border-radius: 0.5rem !important; }
+                        .rounded-xl { border-radius: 0.75rem !important; }
+                        .rounded-2xl { border-radius: 1rem !important; }
+                        .rounded-full { border-radius: 9999px !important; }
+                        .border { border: 1px solid #E5E7EB !important; }
+                        .border-b-4 { border-bottom-width: 4px !important; }
+                        .border-t { border-top: 1px solid #E5E7EB !important; }
+                        .border-l-4 { border-left-width: 4px !important; }
+                        .w-6 { width: 1.5rem !important; }
+                        .h-2 { height: 0.5rem !important; }
+                        .h-full { height: 100% !important; }
+                        .text-center { text-align: center !important; }
+                        .text-right { text-align: right !important; }
+                        .font-sans { font-family: system-ui, sans-serif !important; }
+                        .font-black { font-weight: 900 !important; }
+                        .font-bold { font-weight: 700 !important; }
+                        .text-sm { font-size: 0.875rem !important; }
+                        .text-xs { font-size: 0.75rem !important; }
+                        .text-2xl { font-size: 1.5rem !important; }
+                        .text-4xl { font-size: 2.25rem !important; }
+                        .uppercase { text-transform: uppercase !important; }
+                        .tracking-tighter { letter-spacing: -0.05em !important; }
+                        .tracking-widest { letter-spacing: 0.1em !important; }
+                    `;
+                    clonedDoc.head.appendChild(reportLayout);
+                }
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            setReportImageUrl(imgData);
+            setReportStatus('ready');
+        } catch (error) {
+            console.error("Failed to generate report:", error);
+            setReportStatus('idle');
+            
+            // Provide more helpful error messages
+            let errorMessage = "Failed to generate report. Please try again.";
+            if (error instanceof Error) {
+                if (error.message.includes('lab') || error.message.includes('oklch') || error.message.includes('lch')) {
+                    errorMessage = "Report generation failed due to unsupported color format. This has been reported and should be fixed. Please try refreshing the page and generating again.";
+                } else {
+                    errorMessage = `Error: ${error.message}`;
+                }
+            }
+            alert(errorMessage);
+        }
+    };
+
+    const downloadPDF = () => {
+        if (!reportImageUrl) return;
+
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+
+        // Calculate dimensions to maintain aspect ratio
+        const img = new Image();
+        img.src = reportImageUrl;
+        img.onload = () => {
+            const pdfHeight = (img.height * pdfWidth) / img.width;
+            pdf.addImage(reportImageUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`KrishiBot_Report_${cropName}_Day${dayIndex + 1}.pdf`);
+        };
+    };
 
     // Calculate DYNAMIC summary based on selected day (cumulative up to dayIndex)
     const dynamicSummary = useMemo(() => {
@@ -142,26 +347,67 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
         };
     }, [forecast.daily, dayIndex, currentDay]);
 
-    if (!currentDay || !dynamicSummary) return null;
+    // Don't return null - we need the report template to always render
+    // Instead, conditionally render the visible content
+    const hasValidData = currentDay && dynamicSummary;
 
     return (
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/40 shadow-xl overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/40 shadow-xl overflow-hidden relative">
             {/* Header */}
             <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 px-6 py-5 text-white">
                 <div className="flex justify-between items-start">
-                    <div>
+                    <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                             <Zap className="w-5 h-5 text-yellow-400" />
                             <h2 className="text-xl font-black uppercase tracking-wide">AI Forecasting Hub</h2>
                         </div>
                         <p className="text-indigo-200 text-sm">Precision Agriculture • {dayIndex + 1}-Day Forecast • {cropName}</p>
                     </div>
-                    <div className="text-right">
-                        <div className="px-3 py-1 bg-white/20 rounded-full text-xs font-bold backdrop-blur-sm mb-2">
-                            {isBackendConnected ? '🟢 LIVE' : '🟡 DEMO'}
+
+                    <div className="flex items-center gap-4">
+                        <div className="flex gap-2">
+                            {reportStatus === 'idle' && (
+                                <button
+                                    onClick={generateReport}
+                                    disabled={!hasValidData}
+                                    className={`flex items-center gap-2 px-4 py-2 border border-white/20 rounded-xl text-[10px] font-black tracking-widest transition-all shadow-lg backdrop-blur-md ${
+                                        hasValidData 
+                                            ? 'bg-white/10 hover:bg-white/20 hover:scale-105 active:scale-95' 
+                                            : 'bg-white/5 opacity-50 cursor-not-allowed'
+                                    }`}
+                                    title={!hasValidData ? "Please wait for forecast data to load" : "Generate PDF report"}
+                                >
+                                    <FileText className="w-4 h-4 text-indigo-200" />
+                                    <span>GENERATE REPORT</span>
+                                </button>
+                            )}
+
+                            {reportStatus === 'generating' && (
+                                <div className="flex items-center gap-2 px-4 py-2 text-[10px] font-black tracking-widest text-white/50 animate-pulse">
+                                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                    <span>generating report ...</span>
+                                </div>
+                            )}
+
+                            {reportStatus === 'ready' && (
+                                <button
+                                    onClick={() => setShowReportModal(true)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-400 border border-green-400 rounded-xl text-[10px] font-black tracking-widest transition-all hover:scale-105 active:scale-95 shadow-lg shadow-green-500/20"
+                                >
+                                    <Eye className="w-4 h-4 text-white" />
+                                    <span>VIEW REPORT</span>
+                                </button>
+                            )}
                         </div>
-                        <p className="text-2xl font-bold font-mono">Day {currentDay.day_index}</p>
-                        <p className="text-xs text-indigo-200">{new Date(currentDay.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</p>
+
+                        <div className="h-8 w-px bg-white/10 hidden md:block" />
+
+                        <div className="hidden md:flex flex-col items-end">
+                            <div className="px-3 py-0.5 bg-white/20 rounded-full text-[9px] font-black backdrop-blur-sm mb-0.5 uppercase tracking-tighter">
+                                {isBackendConnected ? '🟢 Live Data' : '🟡 Demo Data'}
+                            </div>
+                            <p className="text-lg font-black font-mono leading-none">DAY {currentDay.day_index}</p>
+                        </div>
                     </div>
                 </div>
 
@@ -204,9 +450,16 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                 </div>
             </div>
 
-            <AnimatePresence mode="wait">
-                {/* SIMULATION TAB */}
-                {activeTab === 'simulation' && (
+            {!hasValidData ? (
+                <div className="p-12 text-center">
+                    <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+                    <p className="font-bold text-gray-600">Loading forecast data...</p>
+                    <p className="text-sm text-gray-400 mt-2">Please wait while we prepare your forecast</p>
+                </div>
+            ) : (
+                <AnimatePresence mode="wait">
+                    {/* SIMULATION TAB */}
+                    {activeTab === 'simulation' && (
                     <motion.div key={`simulation-${dayIndex}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">
                         {/* Main Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -489,9 +742,260 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                             </div>
                         </div>
                     </motion.div>
+                    )}
+                </AnimatePresence>
+            )}
+
+            {/* REPORT PREVIEW MODAL */}
+            <AnimatePresence>
+                {showReportModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowReportModal(false)}
+                            className="absolute inset-0 bg-gray-900/80 backdrop-blur-xl"
+                        />
+
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="relative w-full max-w-4xl max-h-full bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+                        >
+                            {/* Modal Header */}
+                            <div className="p-6 border-b flex items-center justify-between bg-white">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                                        <FileText className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black text-gray-900 tracking-tight leading-tight">DIAGNOSTIC ANALYSIS</h3>
+                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">Report Status: Ready for Export</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowReportModal(false)}
+                                    className="p-3 hover:bg-gray-100 rounded-2xl transition-all hover:rotate-90 group"
+                                >
+                                    <X className="w-6 h-6 text-gray-400 group-hover:text-red-500" />
+                                </button>
+                            </div>
+
+                            {/* Modal Body (Preview) */}
+                            <div className="flex-1 overflow-y-auto p-8 bg-gray-50 flex justify-center custom-scrollbar">
+                                <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] max-w-full rounded-2xl overflow-hidden border border-gray-100 transform transition-transform hover:scale-[1.01]">
+                                    {reportImageUrl ? (
+                                        <img
+                                            src={reportImageUrl}
+                                            alt="Report Preview"
+                                            className="w-full h-auto object-contain"
+                                        />
+                                    ) : (
+                                        <div className="p-32 text-center">
+                                            <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+                                            <p className="font-black text-indigo-900 uppercase tracking-widest">Processing Data...</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="p-8 border-t bg-white flex flex-col sm:flex-row items-center justify-between gap-6">
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2 text-green-600">
+                                        <Check className="w-5 h-5 font-bold" />
+                                        <span className="text-sm font-black uppercase tracking-wider">AI Analysis Secured</span>
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase pl-7">Verified by KrishiBot Intelligence v2.0</p>
+                                </div>
+                                <div className="flex items-center gap-4 w-full sm:w-auto">
+                                    <button
+                                        onClick={() => setShowReportModal(false)}
+                                        className="px-8 py-4 text-xs font-black text-gray-400 hover:text-gray-900 uppercase tracking-widest transition-colors"
+                                    >
+                                        CLOSE VIEW
+                                    </button>
+                                    <button
+                                        onClick={downloadPDF}
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-10 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black shadow-[0_10px_25px_rgba(79,70,229,0.3)] transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-wider text-xs"
+                                    >
+                                        <Download className="w-5 h-5" />
+                                        <span>DOWNLOAD PDF</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
-        </div>
+
+            {/* HIDDEN PRINTABLE REPORT TEMPLATE - Always render so ref is available */}
+            <div className="absolute opacity-0 pointer-events-none overflow-hidden" style={{ width: '800px', left: '-9999px' }}>
+                <div ref={reportRef} className="bg-white p-10 font-sans" style={{ color: '#1F2937' }}>
+                    {hasValidData ? (
+                        <>
+                            {/* Report Header */}
+                            <div className="flex justify-between items-start border-b-4 pb-6 mb-8" style={{ borderColor: '#4F46E5' }}>
+                                <div>
+                                    <h1 className="text-4xl font-black tracking-tighter" style={{ color: '#4338CA' }}>KRISHIBOT DIAGNOSTIC</h1>
+                                    <p className="text-sm font-bold uppercase tracking-widest" style={{ color: '#9CA3AF' }}>Precision Agriculture Analysis Report</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="font-bold text-lg" style={{ color: '#111827' }}>Report ID: #KB-{Math.floor(Date.now() / 100000)}</p>
+                                    <p style={{ color: '#6B7280' }}>{new Date().toLocaleDateString()} • {new Date().toLocaleTimeString()}</p>
+                                </div>
+                            </div>
+
+                            {/* Meta Info */}
+                            <div className="grid grid-cols-3 gap-6 mb-8">
+                                <div className="p-4 rounded-xl border" style={{ backgroundColor: '#F9FAFB', borderColor: '#F3F4F6' }}>
+                                    <p className="text-xs font-bold uppercase mb-1" style={{ color: '#9CA3AF' }}>Target Crop</p>
+                                    <p className="text-xl font-black" style={{ color: '#1F2937' }}>{cropName}</p>
+                                    <p className="text-xs" style={{ color: '#6B7280' }}>{activeCrop?.variety || 'Standard Variety'}</p>
+                                </div>
+                                <div className="p-4 rounded-xl border" style={{ backgroundColor: '#F9FAFB', borderColor: '#F3F4F6' }}>
+                                    <p className="text-xs font-bold uppercase mb-1" style={{ color: '#9CA3AF' }}>Analysis Period</p>
+                                    <p className="text-xl font-black" style={{ color: '#1F2937' }}>{dynamicSummary!.analysis_period}</p>
+                                    <p className="text-xs" style={{ color: '#6B7280' }}>Day 1 to {dayIndex + 1}</p>
+                                </div>
+                                <div className="p-4 rounded-xl border" style={{ backgroundColor: '#F9FAFB', borderColor: '#F3F4F6' }}>
+                                    <p className="text-xs font-bold uppercase mb-1" style={{ color: '#9CA3AF' }}>Yield Classification</p>
+                                    <p className="text-xl font-black" style={{ color: '#4F46E5' }}>{dynamicSummary!.yield_estimate.classification}</p>
+                                    <p className="text-xs" style={{ color: '#6B7280' }}>{dynamicSummary!.yield_estimate.percentage} Forecast Probability</p>
+                                </div>
+                            </div>
+
+                            {/* Main Content Grid */}
+                            <div className="grid grid-cols-2 gap-8 mb-8">
+                                {/* Environmental Snapshot */}
+                                <div>
+                                    <h2 className="text-sm font-black uppercase mb-4 tracking-widest border-l-4 pl-2" style={{ color: '#9CA3AF', borderColor: '#4F46E5' }}>24h Simulation Snapshot</h2>
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#EEF2FF' }}>
+                                            <span className="font-bold" style={{ color: '#4B5563' }}>Growth Stage</span>
+                                            <span className="font-black" style={{ color: '#4338CA' }}>{currentDay!.crop_stage} ({currentDay!.stage_progress}%)</span>
+                                        </div>
+                                        <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
+                                            <span className="font-bold" style={{ color: '#4B5563' }}>Peak Temperature</span>
+                                            <span className="font-black" style={{ color: '#1F2937' }}>{currentDay!.t_max.toFixed(1)}°C</span>
+                                        </div>
+                                        <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
+                                            <span className="font-bold" style={{ color: '#4B5563' }}>GDD Accumulation</span>
+                                            <span className="font-black" style={{ color: '#16A34A' }}>+{currentDay!.gdd.toFixed(1)} GDD</span>
+                                        </div>
+                                        <div className="flex justify-between p-3 rounded-lg" style={{ backgroundColor: '#F9FAFB' }}>
+                                            <span className="font-bold" style={{ color: '#4B5563' }}>VPD Stress</span>
+                                            <span className="font-black" style={{ color: '#1F2937' }}>{(currentDay!.vpd ?? 0).toFixed(2)} kPa</span>
+                                        </div>
+                                        <div className="flex justify-between p-3 rounded-lg border" style={{ backgroundColor: '#EFF6FF', borderColor: '#DBEAFE' }}>
+                                            <span className="font-bold" style={{ color: '#1D4ED8' }}>Irrigation Recommendation</span>
+                                            <span className="font-black" style={{ color: '#1E40AF' }}>{currentDay!.irrigation_needed ? 'REQUIRED' : 'NOT NEEDED'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Cumulative Outlook */}
+                                <div>
+                                    <h2 className="text-sm font-black uppercase mb-4 tracking-widest border-l-4 pl-2" style={{ color: '#9CA3AF', borderColor: '#F97316' }}>{dayIndex + 1}-Day Aggregate Outlook</h2>
+                                    <div className="bg-white border-2 rounded-2xl p-5 shadow-sm" style={{ borderColor: '#F3F4F6' }}>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <div className="flex justify-between mb-1">
+                                                    <span className="text-xs font-bold" style={{ color: '#6B7280' }}>Heat Stress Resistance</span>
+                                                    <span className="text-xs font-bold" style={{ color: '#1F2937' }}>{dynamicSummary!.heat_stress_days} Days Detected</span>
+                                                </div>
+                                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                                    <div className="h-full" style={{ width: `${(dynamicSummary!.heat_stress_days / (dayIndex + 1)) * 100}%`, backgroundColor: '#F87171' }} />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="flex justify-between mb-1">
+                                                    <span className="text-xs font-bold" style={{ color: '#6B7280' }}>Water Availability Index</span>
+                                                    <span className="text-xs font-bold" style={{ color: '#1F2937' }}>{dynamicSummary!.total_precipitation.toFixed(1)} mm Total Rain</span>
+                                                </div>
+                                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                                    <div className="h-full" style={{ width: `${Math.min(100, (dynamicSummary!.total_precipitation / 50) * 100)}%`, backgroundColor: '#60A5FA' }} />
+                                                </div>
+                                            </div>
+                                            <div className="pt-4 border-t grid grid-cols-2 gap-4" style={{ borderColor: '#F3F4F6' }}>
+                                                <div className="text-center">
+                                                    <p className="text-[10px] font-bold uppercase" style={{ color: '#9CA3AF' }}>Estimated Harvest</p>
+                                                    <p className="text-2xl font-black" style={{ color: '#1F2937' }}>{dynamicSummary!.harvest.days_remaining} Days</p>
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="text-[10px] font-bold uppercase" style={{ color: '#9CA3AF' }}>Average GDD/Day</p>
+                                                    <p className="text-2xl font-black" style={{ color: '#1F2937' }}>{dynamicSummary!.avg_daily_gdd.toFixed(1)}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* AI Action Items Section */}
+                            <div className="rounded-2xl p-6 mb-8" style={{ backgroundColor: '#4338CA', color: '#FFFFFF' }}>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <span style={{ color: '#FACC15' }}><Sparkles className="w-6 h-6" /></span>
+                                    <h2 className="text-lg font-black uppercase tracking-widest">AI Action Items & Mitigation</h2>
+                                </div>
+                                <div className="grid grid-cols-1 gap-3">
+                                    {dynamicSummary!.recommendations.map((rec, i) => (
+                                        <div key={i} className="flex gap-3 items-start p-4 rounded-xl border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>{i + 1}</div>
+                                            <p className="text-sm font-bold leading-tight">{rec}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Soil Health Footer (Summary) */}
+                            {soilData && (
+                                <div className="pt-6 border-t" style={{ borderColor: '#F3F4F6' }}>
+                                    <h3 className="text-xs font-black uppercase mb-4 tracking-widest text-center" style={{ color: '#9CA3AF' }}>Reference Soil Parameters</h3>
+                                    <div className="flex justify-between px-10">
+                                        <div className="text-center">
+                                            <p className="text-[10px] font-bold" style={{ color: '#9CA3AF' }}>NITROGEN</p>
+                                            <p className="font-black text-lg" style={{ color: '#1F2937' }}>{soilData.nitrogen.toFixed(2)}%</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-[10px] font-bold" style={{ color: '#9CA3AF' }}>PHOSPHORUS</p>
+                                            <p className="font-black text-lg" style={{ color: '#1F2937' }}>{soilData.phosphorus.toFixed(2)}</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-[10px] font-bold" style={{ color: '#9CA3AF' }}>POTASSIUM</p>
+                                            <p className="font-black text-lg" style={{ color: '#1F2937' }}>{soilData.potassium.toFixed(2)}</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-[10px] font-bold" style={{ color: '#9CA3AF' }}>PH LEVEL</p>
+                                            <p className="font-black text-lg" style={{ color: '#1F2937' }}>{soilData.ph.toFixed(1)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Certification Footer */}
+                            <div className="mt-12 pt-8 border-t flex justify-between items-end" style={{ borderColor: '#F3F4F6', opacity: 0.5 }}>
+                                <div>
+                                    <p className="text-[10px] font-bold" style={{ color: '#1F2937' }}>DIGITALLY GENERATED BY KRISHIBOT AI</p>
+                                    <p className="text-[8px]" style={{ color: '#6B7280' }}>Proprietary Ag-Intelligence Engine v2.0</p>
+                                </div>
+                                <div className="text-[8px] max-w-[300px] text-right" style={{ color: '#6B7280' }}>
+                                    Disclaimer: This diagnostic report is based on current forecast models and sensor data.
+                                    Agricultural results may vary based on unforeseen regional environmental changes.
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="p-10 text-center">
+                            <p className="text-lg font-bold text-gray-600">Report data not available</p>
+                            <p className="text-sm text-gray-400 mt-2">Please wait for forecast data to load</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div >
     );
 };
 
