@@ -85,7 +85,7 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ user, onClose, onLo
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 10 }}
         transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-        className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col relative"
+        className="bg-white/70 backdrop-blur-xl w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col relative border border-white/30"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Background */}
@@ -112,7 +112,7 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ user, onClose, onLo
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-100 px-6">
+        <div className="flex border-b border-white/10 px-6">
           <button
             onClick={() => setActiveTab('info')}
             className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'info' ? 'border-agri-500 text-agri-700' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
@@ -136,8 +136,8 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ user, onClose, onLo
                 </div>
               )}
 
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-start gap-3">
-                <div className="bg-white p-2 rounded-lg text-agri-600 shadow-sm">
+              <div className="bg-white/40 backdrop-blur-md p-4 rounded-xl border border-white/20 flex items-start gap-3 shadow-sm">
+                <div className="bg-white/50 p-2 rounded-lg text-agri-600 shadow-sm">
                   <User className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
@@ -148,7 +148,7 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ user, onClose, onLo
                         type="text"
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="w-full p-1.5 border border-gray-300 rounded text-sm outline-none focus:border-agri-500"
+                        className="w-full p-1.5 bg-white/50 border border-gray-200 rounded text-sm outline-none focus:border-agri-500"
                         autoFocus
                       />
                       <button onClick={handleUpdateProfile} disabled={isSaving} className="text-green-600 hover:text-green-700">
@@ -169,8 +169,8 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ user, onClose, onLo
                 )}
               </div>
 
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-start gap-3">
-                <div className="bg-white p-2 rounded-lg text-agri-600 shadow-sm">
+              <div className="bg-white/40 backdrop-blur-md p-4 rounded-xl border border-white/20 flex items-start gap-3 shadow-sm">
+                <div className="bg-white/50 p-2 rounded-lg text-agri-600 shadow-sm">
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
@@ -180,7 +180,7 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ user, onClose, onLo
                 </div>
               </div>
 
-              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-center gap-3">
+              <div className="bg-blue-100/30 backdrop-blur-md p-4 rounded-xl border border-blue-200/50 flex items-center gap-3 shadow-sm">
                 <Shield className="w-5 h-5 text-blue-600" />
                 <div>
                   <p className="text-sm font-bold text-blue-800">Account Status: Active</p>
@@ -241,7 +241,7 @@ const UserProfilePanel: React.FC<UserProfilePanelProps> = ({ user, onClose, onLo
         </div>
 
         {/* Footer Logout */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50">
+        <div className="p-4 border-t border-white/10 bg-transparent">
           <button
             onClick={onLogout}
             className="w-full py-3 border border-red-100 bg-white text-red-600 rounded-xl font-bold text-sm hover:bg-red-50 transition-colors flex items-center justify-center gap-2 shadow-sm"

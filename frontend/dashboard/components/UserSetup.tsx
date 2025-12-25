@@ -147,7 +147,7 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="glass-panel w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-10 border border-white/50 bg-white/60 backdrop-blur-xl"
+        className="w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-10 border border-white/30 bg-white/40 backdrop-blur-xl"
       >
         {/* Left Panel - Welcome */}
         <div className="md:w-5/12 relative flex flex-col justify-between p-10 bg-agri-700 text-white overflow-hidden">

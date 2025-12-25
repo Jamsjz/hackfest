@@ -37,7 +37,7 @@ const SensorCard = ({ title, icon: Icon, color, delay, children, loading }: any)
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay }}
-    className="bg-white rounded-xl p-5 border border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md transition-all relative overflow-hidden"
+    className="bg-white/70 backdrop-blur-md rounded-xl p-5 border border-white/30 shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:shadow-lg transition-all relative overflow-hidden"
   >
     <div className={`absolute top-0 right-0 p-4 opacity-[0.03] ${color}`}>
       <Icon className="w-24 h-24 transform translate-x-6 -translate-y-6" />
@@ -208,7 +208,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100"
+            className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-sm"
           >
             <p className="text-xs text-green-700 font-bold uppercase mb-1">Nitrogen (N)</p>
             <p className="text-2xl font-bold text-green-900">{soilData.nitrogen.toFixed(2)}<span className="text-sm font-normal ml-1">%</span></p>
@@ -217,7 +217,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55 }}
-            className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100"
+            className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-sm"
           >
             <p className="text-xs text-blue-700 font-bold uppercase mb-1">Phosphorus (P)</p>
             <p className="text-2xl font-bold text-blue-900">{soilData.phosphorus.toFixed(2)}<span className="text-sm font-normal ml-1">kg/ha</span></p>
@@ -226,7 +226,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-4 border border-purple-100"
+            className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-sm"
           >
             <p className="text-xs text-purple-700 font-bold uppercase mb-1">Potassium (K)</p>
             <p className="text-2xl font-bold text-purple-900">{soilData.potassium.toFixed(2)}<span className="text-sm font-normal ml-1">kg/ha</span></p>
@@ -235,7 +235,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.65 }}
-            className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-100"
+            className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-sm"
           >
             <p className="text-xs text-orange-700 font-bold uppercase mb-1">pH Level</p>
             <p className="text-2xl font-bold text-orange-900">{soilData.ph.toFixed(2)}</p>
@@ -252,7 +252,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col"
+            className="bg-white/60 backdrop-blur-lg rounded-2xl border border-white/30 shadow-xl p-6 flex flex-col"
           >
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
               <div className="flex items-center gap-3">
@@ -344,7 +344,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
-            className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col relative overflow-hidden"
+            className="bg-white/60 backdrop-blur-lg rounded-2xl border border-white/30 shadow-xl p-6 flex flex-col relative overflow-hidden"
           >
             <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-agri-600">
               <Sparkles className="w-20 h-20" />
@@ -419,7 +419,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           initial={{ opacity: 0, x: 10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.6 }}
-          className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col"
+          className="bg-white/60 backdrop-blur-lg rounded-2xl border border-white/30 shadow-xl p-6 flex flex-col"
         >
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
             <div className="flex items-center gap-3">

@@ -114,8 +114,8 @@ const CropWizard: React.FC<CropWizardProps> = ({ onComplete, onCancel }) => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-      <div className="bg-agri-600 p-6 text-white">
+    <div className="w-full max-w-2xl mx-auto bg-white/60 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-white/30">
+      <div className="bg-gradient-to-r from-agri-700 to-agri-600 p-6 text-white shadow-lg">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <Leaf className="w-6 h-6" />
           New Crop Entry
@@ -145,7 +145,7 @@ const CropWizard: React.FC<CropWizardProps> = ({ onComplete, onCancel }) => {
 
             {/* AI Crop Recommendations */}
             {isBackendConnected && (
-              <div className="bg-gradient-to-r from-agri-50 to-emerald-50 rounded-xl p-4 border border-agri-100">
+              <div className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/20 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm font-bold text-agri-800 flex items-center gap-2">
                     <Activity className="w-4 h-4 text-agri-600" />
@@ -313,7 +313,7 @@ const CropWizard: React.FC<CropWizardProps> = ({ onComplete, onCancel }) => {
 
             {/* Summary section */}
             {formData.name && (
-              <div className="mt-4 p-4 bg-agri-50 rounded-xl border border-agri-100">
+              <div className="mt-4 p-4 bg-white/40 backdrop-blur-sm rounded-xl border border-white/20 shadow-sm">
                 <h4 className="text-sm font-bold text-agri-800 mb-2">Crop Summary</h4>
                 <div className="text-sm text-gray-600 space-y-1">
                   <p><span className="font-medium">Crop:</span> {formData.name}</p>

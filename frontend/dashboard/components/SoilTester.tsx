@@ -238,7 +238,7 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
             >
-              <div className="bg-amber-50 rounded-2xl p-5 border border-amber-100 space-y-3">
+              <div className="bg-white/40 backdrop-blur-md rounded-2xl p-5 border border-white/20 shadow-lg space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-xl text-amber-900">{result.title}</h4>
                   {backendResult && (
@@ -249,7 +249,7 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
                 </div>
                 <p className="text-sm text-amber-800/80 leading-relaxed font-medium">{result.description}</p>
 
-                <div className="bg-white p-4 rounded-xl border border-amber-200/50 shadow-sm">
+                <div className="bg-white/50 backdrop-blur-sm p-4 rounded-xl border border-white/20 shadow-sm">
                   <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-1">
                     <Layers className="w-3 h-3" /> Recommendations
                   </p>
@@ -266,13 +266,13 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
 
   if (isPage) {
     return (
-      <div className="w-full max-w-2xl mx-auto h-full flex flex-col bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="w-full max-w-2xl mx-auto h-full flex flex-col bg-white/60 backdrop-blur-lg rounded-3xl shadow-xl border border-white/30 overflow-hidden">
         <div className="flex justify-between items-center p-5 border-b border-gray-100 flex-shrink-0 bg-white z-10">
           <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <Layers className="text-amber-700 w-6 h-6" /> Soil Analyst
           </h3>
         </div>
-        <div className="p-6 overflow-y-auto custom-scrollbar bg-white flex-1">
+        <div className="p-6 overflow-y-auto custom-scrollbar bg-transparent flex-1">
           {renderContent()}
         </div>
       </div>
@@ -291,7 +291,7 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 10 }}
         transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-        className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col relative"
+        className="bg-white/70 backdrop-blur-xl w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col relative border border-white/30"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center p-5 border-b border-gray-100 flex-shrink-0 bg-white z-10">
@@ -302,7 +302,7 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto custom-scrollbar bg-white">
+        <div className="p-6 overflow-y-auto custom-scrollbar bg-transparent">
           {renderContent()}
         </div>
       </motion.div>
