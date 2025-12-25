@@ -39,7 +39,7 @@ const MapWidget: React.FC<MapWidgetProps> = ({ mode, initialLat, initialLng, onL
 
     if (!mapInstance.current) {
       const map = window.L.map(mapRef.current).setView([lat, lng], 13);
-      
+
       // Using Esri Satellite tiles for premium agriculture look
       window.L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: 'Tiles &copy; Esri'
@@ -67,7 +67,7 @@ const MapWidget: React.FC<MapWidgetProps> = ({ mode, initialLat, initialLng, onL
       if (mode === 'pick') {
         map.on('click', (e: any) => {
           const { lat, lng } = e.latlng;
-          
+
           if (markerInstance.current) {
             markerInstance.current.setLatLng([lat, lng]);
           } else {
@@ -79,7 +79,7 @@ const MapWidget: React.FC<MapWidgetProps> = ({ mode, initialLat, initialLng, onL
           }
         });
       }
-      
+
       // Initial marker if viewing or if coords provided
       if (initialLat && initialLng) {
         markerInstance.current = window.L.marker([lat, lng], { icon }).addTo(map);
@@ -87,7 +87,7 @@ const MapWidget: React.FC<MapWidgetProps> = ({ mode, initialLat, initialLng, onL
     } else {
       // Map already exists, just update view
       mapInstance.current.setView([lat, lng], 13);
-      
+
       const icon = window.L.divIcon({
         className: 'custom-icon',
         html: `<div style="background-color: #ef4444; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.3);"></div>`,
@@ -116,7 +116,7 @@ const MapWidget: React.FC<MapWidgetProps> = ({ mode, initialLat, initialLng, onL
         </div>
       )}
       <div ref={mapRef} className="w-full h-full z-0" />
-      
+
       {mode === 'pick' && !loading && (
         <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-lg text-xs font-semibold text-gray-700 z-[400]">
           Tap map to pin

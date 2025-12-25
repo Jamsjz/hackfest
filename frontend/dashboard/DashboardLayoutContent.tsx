@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Script from 'next/script';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Leaf, Activity, FileText, Layers, LayoutGrid, Bug, MessageSquare } from './components/ui/Icons';
+import { Leaf, Activity, Layers, LayoutGrid, Bug, MessageSquare } from './components/ui/Icons';
 import UserSetup from './components/UserSetup';
 import UserProfilePanel from './components/UserProfilePanel';
 import VoiceAssistant from './components/VoiceAssistant';
@@ -40,7 +40,7 @@ export default function DashboardLayoutContent({ children }: { children: React.R
         if (pathname === '/dashboard/crop-wizard') return "Add New Crop";
         if (pathname === '/dashboard/detect') return "Disease Detection";
         if (pathname === '/dashboard/test') return "Soil Quality Analysis";
-        if (pathname === '/dashboard/generate') return "Farming Reports";
+
         if (pathname === '/dashboard/forum') return "Kisan Sangha";
         return "Dashboard";
     };
@@ -91,12 +91,7 @@ export default function DashboardLayoutContent({ children }: { children: React.R
                                     path="/dashboard/test"
                                     active={pathname === '/dashboard/test' || pathname.startsWith('/dashboard/test')}
                                 />
-                                <SidebarItem
-                                    icon={FileText}
-                                    label="Generate"
-                                    path="/dashboard/generate"
-                                    active={pathname === '/dashboard/generate' || pathname.startsWith('/dashboard/generate')}
-                                />
+
                                 <SidebarItem
                                     icon={MessageSquare}
                                     label="Forum"

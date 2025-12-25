@@ -128,9 +128,6 @@ const Dashboard: React.FC<DashboardProps> = ({
       <div className="flex justify-between items-end border-b border-gray-200 pb-4">
         <div>
           <h2 className="text-xl font-bold text-gray-800">Field Monitoring</h2>
-          <p className="text-xs text-gray-500 font-mono mt-1">
-            SENSOR_ID: KP-2049 • UPDATED: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </p>
         </div>
         <div className="flex items-center gap-3">
           {onRefreshWeather && (

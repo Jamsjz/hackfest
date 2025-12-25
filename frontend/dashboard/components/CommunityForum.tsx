@@ -244,24 +244,7 @@ const CommunityForum = () => {
                         </div>
                     </div>
 
-                    <div className="bg-agri-600/5 backdrop-blur-sm rounded-2xl p-5 border border-agri-600/10">
-                        <h4 className="text-xs font-black text-agri-700 uppercase tracking-widest mb-3">Community Spotlight</h4>
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-amber-100 border border-amber-200 flex items-center justify-center">
-                                    <Shield className="w-5 h-5 text-amber-600" />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-gray-700">Get Expert Advice</p>
-                                    <p className="text-[10px] text-gray-500 uppercase">12 Active Experts</p>
-                                </div>
-                            </div>
-                            <div className="h-px bg-agri-600/10 w-full"></div>
-                            <div className="text-[10px] text-agri-700/60 leading-relaxed italic">
-                                "Experts are verified agriculture scientists and experienced lead farmers from Nepal."
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
 
                 {/* Main Feed Area */}

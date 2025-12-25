@@ -207,7 +207,7 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
         } catch (error) {
             console.error("Failed to generate report:", error);
             setReportStatus('idle');
-            
+
             // Provide more helpful error messages
             let errorMessage = "Failed to generate report. Please try again.";
             if (error instanceof Error) {
@@ -359,7 +359,7 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                             <Zap className="w-5 h-5 text-yellow-400" />
-                            <h2 className="text-xl font-black uppercase tracking-wide">AI Forecasting Hub</h2>
+                            <h2 className="text-xl font-black uppercase tracking-wide">Forecasting Hub</h2>
                         </div>
                         <p className="text-indigo-200 text-sm">Precision Agriculture • {dayIndex + 1}-Day Forecast • {cropName}</p>
                     </div>
@@ -370,11 +370,10 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                                 <button
                                     onClick={generateReport}
                                     disabled={!hasValidData}
-                                    className={`flex items-center gap-2 px-4 py-2 border border-white/20 rounded-xl text-[10px] font-black tracking-widest transition-all shadow-lg backdrop-blur-md ${
-                                        hasValidData 
-                                            ? 'bg-white/10 hover:bg-white/20 hover:scale-105 active:scale-95' 
-                                            : 'bg-white/5 opacity-50 cursor-not-allowed'
-                                    }`}
+                                    className={`flex items-center gap-2 px-4 py-2 border border-white/20 rounded-xl text-[10px] font-black tracking-widest transition-all shadow-lg backdrop-blur-md ${hasValidData
+                                        ? 'bg-white/10 hover:bg-white/20 hover:scale-105 active:scale-95'
+                                        : 'bg-white/5 opacity-50 cursor-not-allowed'
+                                        }`}
                                     title={!hasValidData ? "Please wait for forecast data to load" : "Generate PDF report"}
                                 >
                                     <FileText className="w-4 h-4 text-indigo-200" />
@@ -460,288 +459,288 @@ const ForecastingHub: React.FC<ForecastingHubProps> = ({
                 <AnimatePresence mode="wait">
                     {/* SIMULATION TAB */}
                     {activeTab === 'simulation' && (
-                    <motion.div key={`simulation-${dayIndex}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">
-                        {/* Main Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            {/* Growth Stage Card */}
-                            <motion.div key={`stage-${dayIndex}`} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl p-5 border border-green-200">
-                                <div className="text-center">
-                                    <span className="text-4xl mb-2 block">🌱</span>
-                                    <h4 className="text-xs font-bold text-gray-500 uppercase mb-1">Growth Stage</h4>
-                                    <p className="text-lg font-black text-green-800">{currentDay.crop_stage}</p>
-                                    <div className="mt-3">
-                                        <div className="flex justify-between text-xs text-gray-500 mb-1">
-                                            <span>Progress</span>
-                                            <span>{currentDay.stage_progress}%</span>
+                        <motion.div key={`simulation-${dayIndex}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">
+                            {/* Main Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                {/* Growth Stage Card */}
+                                <motion.div key={`stage-${dayIndex}`} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl p-5 border border-green-200">
+                                    <div className="text-center">
+                                        <span className="text-4xl mb-2 block">🌱</span>
+                                        <h4 className="text-xs font-bold text-gray-500 uppercase mb-1">Growth Stage</h4>
+                                        <p className="text-lg font-black text-green-800">{currentDay.crop_stage}</p>
+                                        <div className="mt-3">
+                                            <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                                <span>Progress</span>
+                                                <span>{currentDay.stage_progress}%</span>
+                                            </div>
+                                            <div className="h-2 bg-green-200 rounded-full overflow-hidden">
+                                                <motion.div initial={{ width: 0 }} animate={{ width: `${currentDay.stage_progress}%` }} className="h-full bg-green-600 rounded-full" />
+                                            </div>
+                                            <p className="text-xs text-gray-400 mt-1">Next: {currentDay.days_to_next_stage} days</p>
                                         </div>
-                                        <div className="h-2 bg-green-200 rounded-full overflow-hidden">
-                                            <motion.div initial={{ width: 0 }} animate={{ width: `${currentDay.stage_progress}%` }} className="h-full bg-green-600 rounded-full" />
-                                        </div>
-                                        <p className="text-xs text-gray-400 mt-1">Next: {currentDay.days_to_next_stage} days</p>
                                     </div>
-                                </div>
-                            </motion.div>
+                                </motion.div>
 
-                            {/* Temperature Card */}
-                            <motion.div key={`temp-${dayIndex}`} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.05 }} className="bg-gradient-to-br from-orange-50 to-red-100 rounded-2xl p-5 border border-orange-200">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Thermometer className="w-5 h-5 text-orange-600" />
-                                    <h4 className="text-xs font-bold text-gray-500 uppercase">Temperature</h4>
-                                </div>
-                                <div className="flex items-end gap-3 mb-2">
-                                    <span className="text-3xl font-black text-red-600">{currentDay.t_max.toFixed(0)}°</span>
-                                    <span className="text-lg font-bold text-blue-500 mb-1">/ {currentDay.t_min.toFixed(0)}°</span>
-                                </div>
-                                <p className="text-xs text-gray-500">GDD Today: <span className="font-bold text-green-600">+{currentDay.gdd.toFixed(1)}</span></p>
-                                <p className="text-xs text-gray-400 mt-1">Accumulated: {currentDay.accumulated_gdd.toFixed(0)} GDD</p>
-                            </motion.div>
+                                {/* Temperature Card */}
+                                <motion.div key={`temp-${dayIndex}`} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.05 }} className="bg-gradient-to-br from-orange-50 to-red-100 rounded-2xl p-5 border border-orange-200">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Thermometer className="w-5 h-5 text-orange-600" />
+                                        <h4 className="text-xs font-bold text-gray-500 uppercase">Temperature</h4>
+                                    </div>
+                                    <div className="flex items-end gap-3 mb-2">
+                                        <span className="text-3xl font-black text-red-600">{currentDay.t_max.toFixed(0)}°</span>
+                                        <span className="text-lg font-bold text-blue-500 mb-1">/ {currentDay.t_min.toFixed(0)}°</span>
+                                    </div>
+                                    <p className="text-xs text-gray-500">GDD Today: <span className="font-bold text-green-600">+{currentDay.gdd.toFixed(1)}</span></p>
+                                    <p className="text-xs text-gray-400 mt-1">Accumulated: {currentDay.accumulated_gdd.toFixed(0)} GDD</p>
+                                </motion.div>
 
-                            {/* Water Balance Card */}
-                            <motion.div key={`water-${dayIndex}`} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} className="bg-gradient-to-br from-blue-50 to-cyan-100 rounded-2xl p-5 border border-blue-200">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Droplets className="w-5 h-5 text-blue-600" />
-                                    <h4 className="text-xs font-bold text-gray-500 uppercase">Water Balance</h4>
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">ET₀ Demand</span>
-                                        <span className="font-bold text-blue-700">{currentDay.et0.toFixed(1)} mm</span>
+                                {/* Water Balance Card */}
+                                <motion.div key={`water-${dayIndex}`} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }} className="bg-gradient-to-br from-blue-50 to-cyan-100 rounded-2xl p-5 border border-blue-200">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Droplets className="w-5 h-5 text-blue-600" />
+                                        <h4 className="text-xs font-bold text-gray-500 uppercase">Water Balance</h4>
                                     </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">Rain</span>
-                                        <span className="font-bold text-cyan-600">{currentDay.precipitation.toFixed(1)} mm</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">Balance</span>
-                                        <span className={`font-bold ${currentDay.water_balance.balance_mm >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                            {currentDay.water_balance.balance_mm > 0 ? '+' : ''}{currentDay.water_balance.balance_mm} mm
-                                        </span>
-                                    </div>
-                                </div>
-                                {currentDay.irrigation_needed && (
-                                    <div className="mt-2 px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded text-center">
-                                        💧 IRRIGATION NEEDED
-                                    </div>
-                                )}
-                            </motion.div>
-
-                            {/* Stress & Risks Card */}
-                            <motion.div key={`risk-${dayIndex}`} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-5 border border-gray-200">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <AlertCircle className="w-5 h-5 text-gray-600" />
-                                    <h4 className="text-xs font-bold text-gray-500 uppercase">Risks</h4>
-                                </div>
-                                {currentDay.risks.length > 0 ? (
                                     <div className="space-y-2">
-                                        {currentDay.risks.slice(0, 2).map((risk, i) => (
-                                            <div key={i} className={`p-2 rounded-lg border-l-4 text-xs ${risk.severity === 'Critical' || risk.severity === 'High' ? 'bg-red-50 border-red-500 text-red-700' : 'bg-amber-50 border-amber-500 text-amber-700'}`}>
-                                                <span className="font-bold">{risk.type}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-4">
-                                        <span className="text-2xl">🛡️</span>
-                                        <p className="text-xs font-bold text-green-600 mt-1">No Risks</p>
-                                    </div>
-                                )}
-                                <div className="mt-3 p-2 bg-white rounded-lg">
-                                    <p className="text-xs text-gray-500">Disease Risk</p>
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex-1 h-1.5 bg-gray-200 rounded-full">
-                                            <div className={`h-full rounded-full ${currentDay.disease_risk.level === 'High' ? 'bg-red-500' : currentDay.disease_risk.level === 'Moderate' ? 'bg-yellow-500' : 'bg-green-500'}`} style={{ width: `${currentDay.disease_risk.risk_score}%` }} />
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">ET₀ Demand</span>
+                                            <span className="font-bold text-blue-700">{currentDay.et0.toFixed(1)} mm</span>
                                         </div>
-                                        <span className="text-xs font-bold">{currentDay.disease_risk.level}</span>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Rain</span>
+                                            <span className="font-bold text-cyan-600">{currentDay.precipitation.toFixed(1)} mm</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Balance</span>
+                                            <span className={`font-bold ${currentDay.water_balance.balance_mm >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {currentDay.water_balance.balance_mm > 0 ? '+' : ''}{currentDay.water_balance.balance_mm} mm
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        </div>
+                                    {currentDay.irrigation_needed && (
+                                        <div className="mt-2 px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded text-center">
+                                            💧 IRRIGATION NEEDED
+                                        </div>
+                                    )}
+                                </motion.div>
 
-                        {/* Detailed Metrics Row */}
-                        <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mt-4">
-                            <MetricPill label="VPD" value={`${(currentDay.vpd ?? 0).toFixed(2)} kPa`} status={currentDay.vpd_status?.status || 'N/A'} />
-                            <MetricPill label="Humidity" value={`${(currentDay.humidity ?? 0).toFixed(0)}%`} status={(currentDay.humidity ?? 0) > 80 ? 'High' : 'Normal'} />
-                            <MetricPill label="Wind" value={`${(currentDay.wind_speed ?? 0).toFixed(1)} m/s`} status={(currentDay.wind_speed ?? 0) > 10 ? 'Strong' : 'Calm'} />
-                            <MetricPill label="Soil Moisture" value={`${(currentDay.soil_moisture ?? 0).toFixed(0)}%`} status={currentDay.soil_status?.status || 'N/A'} />
-                            <MetricPill label="Soil Temp" value={`${(currentDay.soil_temperature ?? 0).toFixed(1)}°C`} status="Root Zone" />
-                            <MetricPill label="Radiation" value={`${(currentDay.radiation ?? 0).toFixed(0)} W/m²`} status={(currentDay.radiation ?? 0) > 600 ? 'High' : 'Normal'} />
-                        </div>
-                    </motion.div>
-                )}
-
-                {/* SUMMARY TAB - Now dynamic based on dayIndex */}
-                {activeTab === 'summary' && (
-                    <motion.div key={`summary-${dayIndex}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Yield Prediction */}
-                            <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden">
-                                <div className="relative z-10">
-                                    <h4 className="text-purple-200 text-xs font-bold uppercase mb-2">Estimated Yield (Day 1-{dayIndex + 1})</h4>
-                                    <p className="text-4xl font-black mb-1">{dynamicSummary.yield_estimate.classification}</p>
-                                    <p className="text-lg font-bold text-purple-200">{dynamicSummary.yield_estimate.percentage} of Potential</p>
-                                </div>
-                                <Activity className="absolute -right-4 -bottom-4 w-32 h-32 text-white opacity-10" />
+                                {/* Stress & Risks Card */}
+                                <motion.div key={`risk-${dayIndex}`} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.15 }} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-5 border border-gray-200">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <AlertCircle className="w-5 h-5 text-gray-600" />
+                                        <h4 className="text-xs font-bold text-gray-500 uppercase">Risks</h4>
+                                    </div>
+                                    {currentDay.risks.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {currentDay.risks.slice(0, 2).map((risk, i) => (
+                                                <div key={i} className={`p-2 rounded-lg border-l-4 text-xs ${risk.severity === 'Critical' || risk.severity === 'High' ? 'bg-red-50 border-red-500 text-red-700' : 'bg-amber-50 border-amber-500 text-amber-700'}`}>
+                                                    <span className="font-bold">{risk.type}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-4">
+                                            <span className="text-2xl">🛡️</span>
+                                            <p className="text-xs font-bold text-green-600 mt-1">No Risks</p>
+                                        </div>
+                                    )}
+                                    <div className="mt-3 p-2 bg-white rounded-lg">
+                                        <p className="text-xs text-gray-500">Disease Risk</p>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1 h-1.5 bg-gray-200 rounded-full">
+                                                <div className={`h-full rounded-full ${currentDay.disease_risk.level === 'High' ? 'bg-red-500' : currentDay.disease_risk.level === 'Moderate' ? 'bg-yellow-500' : 'bg-green-500'}`} style={{ width: `${currentDay.disease_risk.risk_score}%` }} />
+                                            </div>
+                                            <span className="text-xs font-bold">{currentDay.disease_risk.level}</span>
+                                        </div>
+                                    </div>
+                                </motion.div>
                             </div>
 
-                            {/* Harvest Prediction */}
-                            <div className="bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl p-6 border border-amber-200">
-                                <h4 className="text-amber-800 text-xs font-bold uppercase mb-3">🌾 Harvest Forecast</h4>
-                                <p className="text-3xl font-black text-amber-900 mb-1">{dynamicSummary.harvest.days_remaining} Days</p>
-                                <p className="text-sm text-amber-700">Phase: {dynamicSummary.harvest.harvest_window}</p>
-                                <div className="mt-4">
-                                    <div className="flex justify-between text-xs text-gray-500 mb-1">
-                                        <span>GDD Progress</span>
-                                        <span>{dynamicSummary.harvest.readiness_percent.toFixed(0)}%</span>
+                            {/* Detailed Metrics Row */}
+                            <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mt-4">
+                                <MetricPill label="VPD" value={`${(currentDay.vpd ?? 0).toFixed(2)} kPa`} status={currentDay.vpd_status?.status || 'N/A'} />
+                                <MetricPill label="Humidity" value={`${(currentDay.humidity ?? 0).toFixed(0)}%`} status={(currentDay.humidity ?? 0) > 80 ? 'High' : 'Normal'} />
+                                <MetricPill label="Wind" value={`${(currentDay.wind_speed ?? 0).toFixed(1)} m/s`} status={(currentDay.wind_speed ?? 0) > 10 ? 'Strong' : 'Calm'} />
+                                <MetricPill label="Soil Moisture" value={`${(currentDay.soil_moisture ?? 0).toFixed(0)}%`} status={currentDay.soil_status?.status || 'N/A'} />
+                                <MetricPill label="Soil Temp" value={`${(currentDay.soil_temperature ?? 0).toFixed(1)}°C`} status="Root Zone" />
+                                <MetricPill label="Radiation" value={`${(currentDay.radiation ?? 0).toFixed(0)} W/m²`} status={(currentDay.radiation ?? 0) > 600 ? 'High' : 'Normal'} />
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* SUMMARY TAB - Now dynamic based on dayIndex */}
+                    {activeTab === 'summary' && (
+                        <motion.div key={`summary-${dayIndex}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* Yield Prediction */}
+                                <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden">
+                                    <div className="relative z-10">
+                                        <h4 className="text-purple-200 text-xs font-bold uppercase mb-2">Estimated Yield (Day 1-{dayIndex + 1})</h4>
+                                        <p className="text-4xl font-black mb-1">{dynamicSummary.yield_estimate.classification}</p>
+                                        <p className="text-lg font-bold text-purple-200">{dynamicSummary.yield_estimate.percentage} of Potential</p>
                                     </div>
-                                    <div className="h-3 bg-amber-200 rounded-full overflow-hidden">
-                                        <div className="h-full bg-amber-500 rounded-full" style={{ width: `${dynamicSummary.harvest.readiness_percent}%` }} />
+                                    <Activity className="absolute -right-4 -bottom-4 w-32 h-32 text-white opacity-10" />
+                                </div>
+
+                                {/* Harvest Prediction */}
+                                <div className="bg-gradient-to-br from-amber-50 to-orange-100 rounded-2xl p-6 border border-amber-200">
+                                    <h4 className="text-amber-800 text-xs font-bold uppercase mb-3">🌾 Harvest Forecast</h4>
+                                    <p className="text-3xl font-black text-amber-900 mb-1">{dynamicSummary.harvest.days_remaining} Days</p>
+                                    <p className="text-sm text-amber-700">Phase: {dynamicSummary.harvest.harvest_window}</p>
+                                    <div className="mt-4">
+                                        <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                            <span>GDD Progress</span>
+                                            <span>{dynamicSummary.harvest.readiness_percent.toFixed(0)}%</span>
+                                        </div>
+                                        <div className="h-3 bg-amber-200 rounded-full overflow-hidden">
+                                            <div className="h-full bg-amber-500 rounded-full" style={{ width: `${dynamicSummary.harvest.readiness_percent}%` }} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Stress Summary - Dynamic */}
+                                <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                                    <h4 className="text-gray-600 text-xs font-bold uppercase mb-4">{dayIndex + 1}-Day Stress Summary</h4>
+                                    <div className="space-y-3">
+                                        <StressMeter label="Heat Stress" days={dynamicSummary.heat_stress_days} max={dayIndex + 1} />
+                                        <StressMeter label="Cold Stress" days={dynamicSummary.cold_stress_days} max={dayIndex + 1} />
+                                        <StressMeter label="Drought" days={dynamicSummary.drought_stress_days} max={dayIndex + 1} />
+                                        <StressMeter label="Waterlog" days={dynamicSummary.waterlog_days} max={dayIndex + 1} />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Stress Summary - Dynamic */}
-                            <div className="bg-white rounded-2xl p-6 border border-gray-200">
-                                <h4 className="text-gray-600 text-xs font-bold uppercase mb-4">{dayIndex + 1}-Day Stress Summary</h4>
-                                <div className="space-y-3">
-                                    <StressMeter label="Heat Stress" days={dynamicSummary.heat_stress_days} max={dayIndex + 1} />
-                                    <StressMeter label="Cold Stress" days={dynamicSummary.cold_stress_days} max={dayIndex + 1} />
-                                    <StressMeter label="Drought" days={dynamicSummary.drought_stress_days} max={dayIndex + 1} />
-                                    <StressMeter label="Waterlog" days={dynamicSummary.waterlog_days} max={dayIndex + 1} />
-                                </div>
+                            {/* Growth & Water Summary - Dynamic */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                                <SummaryCard icon="🌱" label="Current Stage" value={dynamicSummary.current_stage} sub={`${dynamicSummary.stage_progress}% complete`} />
+                                <SummaryCard icon="🌡️" label="Total GDD" value={dynamicSummary.total_gdd.toFixed(0)} sub={`Avg: ${dynamicSummary.avg_daily_gdd.toFixed(1)}/day`} />
+                                <SummaryCard icon="🌧️" label="Total Rain" value={`${dynamicSummary.total_precipitation.toFixed(0)} mm`} sub={`${dayIndex + 1}-day total`} />
+                                <SummaryCard icon="💧" label="Irrigation Days" value={dynamicSummary.irrigation_days_needed.toString()} sub={`of ${dayIndex + 1} days`} />
                             </div>
-                        </div>
+                        </motion.div>
+                    )}
 
-                        {/* Growth & Water Summary - Dynamic */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                            <SummaryCard icon="🌱" label="Current Stage" value={dynamicSummary.current_stage} sub={`${dynamicSummary.stage_progress}% complete`} />
-                            <SummaryCard icon="🌡️" label="Total GDD" value={dynamicSummary.total_gdd.toFixed(0)} sub={`Avg: ${dynamicSummary.avg_daily_gdd.toFixed(1)}/day`} />
-                            <SummaryCard icon="🌧️" label="Total Rain" value={`${dynamicSummary.total_precipitation.toFixed(0)} mm`} sub={`${dayIndex + 1}-day total`} />
-                            <SummaryCard icon="💧" label="Irrigation Days" value={dynamicSummary.irrigation_days_needed.toString()} sub={`of ${dayIndex + 1} days`} />
-                        </div>
-                    </motion.div>
-                )}
-
-                {/* RECOMMENDATIONS TAB - Now dynamic based on dayIndex */}
-                {activeTab === 'recommendations' && (
-                    <motion.div key={`recommendations-${dayIndex}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">
-                        {/* Row 1: Farm Summary + Crop Recommendations */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            {/* Farm Summary Card - Dynamic */}
-                            <div className="bg-white rounded-2xl p-6 border border-gray-200 relative overflow-hidden">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-2">
-                                        <FileText className="w-5 h-5 text-emerald-600" />
-                                        <h4 className="font-bold text-gray-800">Farm Summary</h4>
+                    {/* RECOMMENDATIONS TAB - Now dynamic based on dayIndex */}
+                    {activeTab === 'recommendations' && (
+                        <motion.div key={`recommendations-${dayIndex}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="p-6">
+                            {/* Row 1: Farm Summary + Crop Recommendations */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                {/* Farm Summary Card - Dynamic */}
+                                <div className="bg-white rounded-2xl p-6 border border-gray-200 relative overflow-hidden">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <FileText className="w-5 h-5 text-emerald-600" />
+                                            <h4 className="font-bold text-gray-800">Farm Summary</h4>
+                                        </div>
+                                        <div className="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full border border-indigo-200">
+                                            Day {dayIndex + 1} Outlook
+                                        </div>
                                     </div>
-                                    <div className="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full border border-indigo-200">
-                                        Day {dayIndex + 1} Outlook
-                                    </div>
-                                </div>
 
-                                {/* Active Crop & Stage */}
-                                <div className="grid grid-cols-2 gap-3 mb-4">
-                                    <div className="p-3 bg-gray-50 rounded-xl">
-                                        <p className="text-xs text-gray-500 font-bold uppercase mb-1">Active Crop</p>
-                                        {activeCrop ? (
+                                    {/* Active Crop & Stage */}
+                                    <div className="grid grid-cols-2 gap-3 mb-4">
+                                        <div className="p-3 bg-gray-50 rounded-xl">
+                                            <p className="text-xs text-gray-500 font-bold uppercase mb-1">Active Crop</p>
+                                            {activeCrop ? (
+                                                <div>
+                                                    <p className="text-lg font-bold text-gray-800">{activeCrop.name}</p>
+                                                    <p className="text-xs text-gray-500">{activeCrop.area} {activeCrop.areaUnit}</p>
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-gray-400 italic">No active crops</p>
+                                            )}
+                                        </div>
+                                        <div className="p-3 bg-gray-50 rounded-xl">
+                                            <p className="text-xs text-gray-500 font-bold uppercase mb-1">Stage on Day {dayIndex + 1}</p>
+                                            <p className="text-lg font-bold text-gray-800">{dynamicSummary.current_stage}</p>
+                                            <p className="text-xs text-green-600 font-medium">{dynamicSummary.stage_progress}% complete</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Dynamic Alerts & Tasks */}
+                                    <h5 className="text-xs font-bold text-gray-400 uppercase mb-2">Alerts for Next {dayIndex + 1} Days</h5>
+                                    <div className="space-y-2">
+                                        <div className={`flex items-start gap-2 p-2 rounded-lg ${dynamicSummary.irrigation_days_needed > 0 ? 'bg-amber-50 border border-amber-100' : 'bg-green-50 border border-green-100'}`}>
+                                            <CloudRain className={`w-4 h-4 mt-0.5 ${dynamicSummary.irrigation_days_needed > 0 ? 'text-amber-500' : 'text-green-500'}`} />
                                             <div>
-                                                <p className="text-lg font-bold text-gray-800">{activeCrop.name}</p>
-                                                <p className="text-xs text-gray-500">{activeCrop.area} {activeCrop.areaUnit}</p>
+                                                <p className="text-xs font-semibold text-gray-700">Irrigation</p>
+                                                <p className="text-xs text-gray-500">
+                                                    {dynamicSummary.irrigation_days_needed > 0
+                                                        ? `${dynamicSummary.irrigation_days_needed} day${dynamicSummary.irrigation_days_needed > 1 ? 's' : ''} need irrigation`
+                                                        : 'Sufficient rainfall expected'}
+                                                </p>
                                             </div>
-                                        ) : (
-                                            <p className="text-sm text-gray-400 italic">No active crops</p>
-                                        )}
-                                    </div>
-                                    <div className="p-3 bg-gray-50 rounded-xl">
-                                        <p className="text-xs text-gray-500 font-bold uppercase mb-1">Stage on Day {dayIndex + 1}</p>
-                                        <p className="text-lg font-bold text-gray-800">{dynamicSummary.current_stage}</p>
-                                        <p className="text-xs text-green-600 font-medium">{dynamicSummary.stage_progress}% complete</p>
-                                    </div>
-                                </div>
-
-                                {/* Dynamic Alerts & Tasks */}
-                                <h5 className="text-xs font-bold text-gray-400 uppercase mb-2">Alerts for Next {dayIndex + 1} Days</h5>
-                                <div className="space-y-2">
-                                    <div className={`flex items-start gap-2 p-2 rounded-lg ${dynamicSummary.irrigation_days_needed > 0 ? 'bg-amber-50 border border-amber-100' : 'bg-green-50 border border-green-100'}`}>
-                                        <CloudRain className={`w-4 h-4 mt-0.5 ${dynamicSummary.irrigation_days_needed > 0 ? 'text-amber-500' : 'text-green-500'}`} />
-                                        <div>
-                                            <p className="text-xs font-semibold text-gray-700">Irrigation</p>
-                                            <p className="text-xs text-gray-500">
-                                                {dynamicSummary.irrigation_days_needed > 0
-                                                    ? `${dynamicSummary.irrigation_days_needed} day${dynamicSummary.irrigation_days_needed > 1 ? 's' : ''} need irrigation`
-                                                    : 'Sufficient rainfall expected'}
-                                            </p>
+                                        </div>
+                                        <div className={`flex items-start gap-2 p-2 rounded-lg ${dynamicSummary.total_risk_days > 2 ? 'bg-red-50 border border-red-100' : 'bg-green-50 border border-green-100'}`}>
+                                            <Bug className={`w-4 h-4 mt-0.5 ${dynamicSummary.total_risk_days > 2 ? 'text-red-500' : 'text-green-500'}`} />
+                                            <div>
+                                                <p className="text-xs font-semibold text-gray-700">Stress Risk</p>
+                                                <p className="text-xs text-gray-500">
+                                                    {dynamicSummary.total_risk_days > 2
+                                                        ? `${dynamicSummary.total_risk_days} stress days detected`
+                                                        : 'Conditions favorable'}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className={`flex items-start gap-2 p-2 rounded-lg ${dynamicSummary.total_risk_days > 2 ? 'bg-red-50 border border-red-100' : 'bg-green-50 border border-green-100'}`}>
-                                        <Bug className={`w-4 h-4 mt-0.5 ${dynamicSummary.total_risk_days > 2 ? 'text-red-500' : 'text-green-500'}`} />
-                                        <div>
-                                            <p className="text-xs font-semibold text-gray-700">Stress Risk</p>
-                                            <p className="text-xs text-gray-500">
-                                                {dynamicSummary.total_risk_days > 2
-                                                    ? `${dynamicSummary.total_risk_days} stress days detected`
-                                                    : 'Conditions favorable'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
 
-                                {onAddCrop && !activeCrop && (
-                                    <button
-                                        onClick={onAddCrop}
-                                        className="mt-4 w-full py-2 border border-dashed border-gray-300 rounded-xl text-gray-500 text-sm font-medium hover:bg-gray-50 flex items-center justify-center gap-2"
-                                    >
-                                        <Leaf className="w-4 h-4" /> Add New Crop
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Crop Recommendations */}
-                            <div className="bg-white rounded-2xl p-6 border border-gray-200 relative overflow-hidden">
-                                <Sparkles className="absolute top-2 right-2 w-16 h-16 text-gray-100" />
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-2">
-                                        <Leaf className="w-5 h-5 text-green-600" />
-                                        <h4 className="font-bold text-gray-800">AI Precision Planting</h4>
-                                    </div>
-                                    {onRefreshRecommendations && (
-                                        <button onClick={onRefreshRecommendations} disabled={recommendationsLoading} className="p-1 hover:bg-gray-100 rounded">
-                                            <RefreshCw className={`w-4 h-4 text-gray-400 ${recommendationsLoading ? 'animate-spin' : ''}`} />
+                                    {onAddCrop && !activeCrop && (
+                                        <button
+                                            onClick={onAddCrop}
+                                            className="mt-4 w-full py-2 border border-dashed border-gray-300 rounded-xl text-gray-500 text-sm font-medium hover:bg-gray-50 flex items-center justify-center gap-2"
+                                        >
+                                            <Leaf className="w-4 h-4" /> Add New Crop
                                         </button>
                                     )}
                                 </div>
-                                <div className="space-y-2">
-                                    {recommendationsLoading ? (
-                                        [1, 2, 3].map(i => <div key={i} className="h-10 bg-gray-100 rounded-lg animate-pulse" />)
-                                    ) : cropRecommendations && cropRecommendations.length > 0 ? (
-                                        cropRecommendations.map((crop, idx) => (
-                                            <div key={crop} className={`flex items-center justify-between p-3 rounded-xl border ${idx === 0 ? 'bg-green-50 border-green-200' : 'bg-white border-gray-100'}`}>
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${idx === 0 ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-500'}`}>{idx + 1}</div>
-                                                    <span className={`font-bold ${idx === 0 ? 'text-green-900' : 'text-gray-700'}`}>{crop}</span>
+
+                                {/* Crop Recommendations */}
+                                <div className="bg-white rounded-2xl p-6 border border-gray-200 relative overflow-hidden">
+                                    <Sparkles className="absolute top-2 right-2 w-16 h-16 text-gray-100" />
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <Leaf className="w-5 h-5 text-green-600" />
+                                            <h4 className="font-bold text-gray-800">Crop Recommendation System</h4>
+                                        </div>
+                                        {onRefreshRecommendations && (
+                                            <button onClick={onRefreshRecommendations} disabled={recommendationsLoading} className="p-1 hover:bg-gray-100 rounded">
+                                                <RefreshCw className={`w-4 h-4 text-gray-400 ${recommendationsLoading ? 'animate-spin' : ''}`} />
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        {recommendationsLoading ? (
+                                            [1, 2, 3].map(i => <div key={i} className="h-10 bg-gray-100 rounded-lg animate-pulse" />)
+                                        ) : cropRecommendations && cropRecommendations.length > 0 ? (
+                                            cropRecommendations.map((crop, idx) => (
+                                                <div key={crop} className={`flex items-center justify-between p-3 rounded-xl border ${idx === 0 ? 'bg-green-50 border-green-200' : 'bg-white border-gray-100'}`}>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${idx === 0 ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-500'}`}>{idx + 1}</div>
+                                                        <span className={`font-bold ${idx === 0 ? 'text-green-900' : 'text-gray-700'}`}>{crop}</span>
+                                                    </div>
+                                                    {idx === 0 && <span className="text-xs font-bold bg-green-600 text-white px-2 py-0.5 rounded-full">BEST</span>}
                                                 </div>
-                                                {idx === 0 && <span className="text-xs font-bold bg-green-600 text-white px-2 py-0.5 rounded-full">BEST</span>}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-sm text-gray-400 italic text-center py-4">No recommendations available</p>
-                                    )}
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-gray-400 italic text-center py-4">No recommendations available</p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Row 2: Dynamic AI Recommendations */}
-                        <div className="bg-gradient-to-br from-emerald-50 to-green-100 rounded-2xl p-6 border border-green-200">
-                            <div className="flex items-center gap-2 mb-4">
-                                <Sparkles className="w-5 h-5 text-green-600" />
-                                <h4 className="font-bold text-green-800">AI Action Items (Day 1-{dayIndex + 1})</h4>
+                            {/* Row 2: Dynamic AI Recommendations */}
+                            <div className="bg-gradient-to-br from-emerald-50 to-green-100 rounded-2xl p-6 border border-green-200">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <Sparkles className="w-5 h-5 text-green-600" />
+                                    <h4 className="font-bold text-green-800">AI Action Items (Day 1-{dayIndex + 1})</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    {dynamicSummary.recommendations.map((rec, i) => (
+                                        <div key={i} className="bg-white/70 rounded-xl p-3 text-sm text-gray-700 border border-green-100">{rec}</div>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {dynamicSummary.recommendations.map((rec, i) => (
-                                    <div key={i} className="bg-white/70 rounded-xl p-3 text-sm text-gray-700 border border-green-100">{rec}</div>
-                                ))}
-                            </div>
-                        </div>
-                    </motion.div>
+                        </motion.div>
                     )}
                 </AnimatePresence>
             )}
