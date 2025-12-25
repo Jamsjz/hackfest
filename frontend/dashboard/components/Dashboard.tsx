@@ -135,8 +135,8 @@ const Dashboard: React.FC<DashboardProps> = ({
             </button>
           )}
           <span className={`text-xs font-bold px-3 py-1 rounded-full border ${isBackendConnected
-              ? 'bg-green-100 text-green-700 border-green-200'
-              : 'bg-yellow-100 text-yellow-700 border-yellow-200'
+            ? 'bg-green-100 text-green-700 border-green-200'
+            : 'bg-yellow-100 text-yellow-700 border-yellow-200'
             }`}>
             {isBackendConnected ? 'LIVE DATA' : 'DEMO MODE'}
           </span>
@@ -158,32 +158,32 @@ const Dashboard: React.FC<DashboardProps> = ({
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Air & Atmosphere */}
         <SensorCard title="Atmosphere" icon={Thermometer} color="text-red-600" delay={0.1} loading={weatherLoading}>
-          <DataRow label="Temperature" value={weather.tempMax} unit="°C" status={`Low: ${weather.tempMin}°C`} />
+          <DataRow label="Temperature" value={Math.round(weather.tempMax)} unit="°C" status={`Low: ${Math.round(weather.tempMin)}°C`} />
           <div className="h-px bg-gray-100 w-full"></div>
-          <DataRow label="Humidity" value={weather.humidity} unit="%" status={weather.humidity > 70 ? 'High' : 'Optimal'} />
+          <DataRow label="Humidity" value={Math.round(weather.humidity)} unit="%" status={weather.humidity > 70 ? 'High' : 'Optimal'} />
         </SensorCard>
 
         {/* Soil Health */}
         <SensorCard title="Soil Status" icon={Layers} color="text-amber-600" delay={0.2} loading={weatherLoading}>
-          <DataRow label="Moisture (10cm)" value={weather.soilMoisture} unit="%" status={weather.soilMoisture > 50 ? 'Good' : 'Adequate'} />
+          <DataRow label="Moisture (10cm)" value={Math.round(weather.soilMoisture * 100)} unit="%" status={weather.soilMoisture > 0.5 ? 'Good' : 'Adequate'} />
           <div className="h-px bg-gray-100 w-full"></div>
           {soilData ? (
             <DataRow label="pH Level" value={soilData.ph.toFixed(1)} unit="" status={soilData.ph > 6 && soilData.ph < 7.5 ? 'Optimal' : 'Check'} />
           ) : (
-            <DataRow label="Temperature" value={weather.tempMax - 4} unit="°C" status="Root zone" />
+            <DataRow label="Temperature" value={Math.round(weather.tempMax - 4)} unit="°C" status="Root zone" />
           )}
         </SensorCard>
 
         {/* Water & Rain */}
         <SensorCard title="Hydrology" icon={CloudRain} color="text-blue-600" delay={0.3} loading={weatherLoading}>
-          <DataRow label="Precipitation" value={weather.rain.toFixed(1)} unit="mm" status="Past 24h" />
+          <DataRow label="Precipitation" value={Math.round(weather.rain)} unit="mm" status="Past 24h" />
           <div className="h-px bg-gray-100 w-full"></div>
           <DataRow label="Irrigation" value={weather.rain > 5 ? "HOLD" : "NEEDED"} unit="" status={weather.rain > 5 ? "Rain expected" : "Check schedule"} />
         </SensorCard>
 
         {/* Field Conditions */}
         <SensorCard title="Field Cond." icon={Activity} color="text-slate-600" delay={0.4} loading={weatherLoading}>
-          <DataRow label="Wind Speed" value={weather.windSpeed.toFixed(0)} unit="km/h" status="NW Direction" />
+          <DataRow label="Wind Speed" value={Math.round(weather.windSpeed)} unit="km/h" status="NW Direction" />
           <div className="h-px bg-gray-100 w-full"></div>
           <div className="flex items-center justify-between">
             <span className="text-gray-500 text-xs font-medium uppercase">Condition</span>
@@ -205,7 +205,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100"
           >
             <p className="text-xs text-green-700 font-bold uppercase mb-1">Nitrogen (N)</p>
-            <p className="text-2xl font-bold text-green-900">{soilData.nitrogen.toFixed(2)}<span className="text-sm font-normal ml-1">%</span></p>
+            <p className="text-2xl font-bold text-green-900">{Math.round(soilData.nitrogen)}<span className="text-sm font-normal ml-1">%</span></p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -214,7 +214,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100"
           >
             <p className="text-xs text-blue-700 font-bold uppercase mb-1">Phosphorus (P)</p>
-            <p className="text-2xl font-bold text-blue-900">{soilData.phosphorus.toFixed(0)}<span className="text-sm font-normal ml-1">kg/ha</span></p>
+            <p className="text-2xl font-bold text-blue-900">{Math.round(soilData.phosphorus)}<span className="text-sm font-normal ml-1">kg/ha</span></p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -223,7 +223,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-4 border border-purple-100"
           >
             <p className="text-xs text-purple-700 font-bold uppercase mb-1">Potassium (K)</p>
-            <p className="text-2xl font-bold text-purple-900">{soilData.potassium.toFixed(0)}<span className="text-sm font-normal ml-1">kg/ha</span></p>
+            <p className="text-2xl font-bold text-purple-900">{Math.round(soilData.potassium)}<span className="text-sm font-normal ml-1">kg/ha</span></p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
