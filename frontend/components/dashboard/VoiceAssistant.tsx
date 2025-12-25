@@ -4,12 +4,14 @@ import { Mic, X, AgriBot } from './ui/Icons';
 import { generateChatResponse } from '../../lib/gemini-service';
 import { ChatMessage } from '../../lib/dashboard-types';
 import ReactMarkdown from 'react-markdown';
+import { useDashboard } from '@/dashboard/DashboardContext';
 
 interface VoiceAssistantProps {
     hasBottomNav?: boolean;
 }
 
 const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false }) => {
+    const { weather, crops, activeCropId, user } = useDashboard();
     const [isOpen, setIsOpen] = useState(false);
     const [isListening, setIsListening] = useState(false);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -23,14 +25,31 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
     }, [messages]);
 
     const toggleListening = () => {
-        setIsListening(!isListening);
-        if (!isListening) {
-            // Simulate listening delay then stop
-            setTimeout(() => {
-                setIsListening(false);
-                setInputValue("When should I irrigate my rice field?"); // Mock speech-to-text
-            }, 3000);
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("Speech recognition is not supported in this browser.");
+            return;
         }
+
+        if (isListening) {
+            setIsListening(false);
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ne-NP';
+        recognition.interimResults = false;
+
+        recognition.onstart = () => setIsListening(true);
+        recognition.onresult = (event: any) => {
+            const transcript = event.results[0][0].transcript;
+            setInputValue(transcript);
+            setIsListening(false);
+        };
+        recognition.onerror = () => setIsListening(false);
+        recognition.onend = () => setIsListening(false);
+
+        recognition.start();
     };
 
     const handleSend = async () => {
@@ -50,17 +69,51 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
         const loadingId = "loading-" + Date.now();
         setMessages(prev => [...prev, { id: loadingId, role: 'model', text: 'Thinking...', timestamp: Date.now() }]);
 
-        const responseText = await generateChatResponse(
-            messages.map(m => ({ role: m.role, text: m.text })),
-            userMsg.text
-        );
+        // Construct Context
+        const activeCrop = crops.find(c => c.id === activeCropId);
+        const forecastStr = weather?.dailyData?.slice(0, 3).map(day =>
+            `${day.date}: Max ${day.temperature_2m_max}°C, Min ${day.temperature_2m_min}°C`
+        ).join(' | ') || "No forecast available";
 
-        setMessages(prev => prev.filter(m => m.id !== loadingId).concat({
-            id: (Date.now() + 1).toString(),
-            role: 'model',
-            text: responseText,
-            timestamp: Date.now()
-        }));
+        const context = `
+        User: ${user?.username || "Guest"} (${user?.locationName || "Unknown Location"})
+        Key Metrics:
+        - Weather: ${weather ? `${weather.condition}, Curr: ${weather.tempMax}°C (Min ${weather.tempMin})` : "N/A"}
+        - Soil Moisture: ${weather?.soilMoisture ? `${weather.soilMoisture}%` : "N/A"}
+        - Rain: ${weather?.rain ? `${weather.rain}mm` : "0mm"}
+        - Wind: ${weather?.windSpeed || "N/A"} km/h
+        
+        Weather Forecast (Next 3 Days):
+        ${forecastStr}
+
+        Active Crop: ${activeCrop ? `${activeCrop.name} (${activeCrop.variety}) - ${activeCrop.area} ${activeCrop.areaUnit}` : "None"}
+        Soil Data:
+        - pH: ${weather?.soilData?.ph || "6.5 (Typical)"}
+        - NPK: ${weather?.soilData?.nitrogen || "?"}-${weather?.soilData?.phosphorus || "?"}-${weather?.soilData?.potassium || "?"}
+        - Soil Temp: ${weather?.soilTemperature || "N/A"}°C
+        `;
+
+        try {
+            const responseText = await generateChatResponse(
+                messages.map(m => ({ role: m.role, text: m.text })),
+                userMsg.text,
+                context
+            );
+
+            setMessages(prev => prev.filter(m => m.id !== loadingId).concat({
+                id: (Date.now() + 1).toString(),
+                role: 'model',
+                text: responseText,
+                timestamp: Date.now()
+            }));
+        } catch (error) {
+            setMessages(prev => prev.filter(m => m.id !== loadingId).concat({
+                id: (Date.now() + 1).toString(),
+                role: 'model',
+                text: "Sorry, I am having trouble connecting. Please try again.",
+                timestamp: Date.now()
+            }));
+        }
     };
 
     // Dynamic classes based on whether bottom nav exists (Dashboard) or not (User Setup/Desktop)
@@ -99,7 +152,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
                                 <div className="bg-white/20 p-1.5 rounded-full backdrop-blur-sm border border-white/30 overflow-hidden w-10 h-10 flex items-center justify-center">
                                     <AgriBot className="w-7 h-7 text-white" />
                                 </div>
-                                <div>
+                                <div className="leading-tight">
                                     <h3 className="font-bold text-lg">कृषिबिद</h3>
                                     <p className="text-[10px] text-green-100 uppercase tracking-wider font-medium">Smart Agri Assistant</p>
                                 </div>
@@ -119,6 +172,11 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
                                     <div>
                                         <p className="text-sm font-semibold text-gray-600">नमस्ते! I am कृषिबिद (Krishibid).</p>
                                         <p className="text-xs mt-1 text-gray-400">Ask me about your crops, soil, or weather.</p>
+                                        {weather && (
+                                            <p className="text-[10px] text-green-600 mt-2 bg-green-50 inline-block px-2 py-1 rounded-lg border border-green-100">
+                                                Context Aware: {weather.condition}, {weather.tempMax}°C
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="flex flex-wrap gap-2 justify-center mt-4 px-4">
                                         <button onClick={() => setInputValue("Analyze my crop health")} className="text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-full hover:bg-gray-50 text-gray-600 shadow-sm transition-colors">Analyze crop health</button>
@@ -132,8 +190,8 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
                                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.role === 'user'
-                                            ? 'bg-[#059669] text-white rounded-br-none shadow-green-600/10'
-                                            : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none prose prose-sm prose-p:my-1 prose-ul:my-1 prose-li:my-0 prose-headings:text-gray-900 prose-headings:font-bold prose-a:text-green-600 prose-strong:text-gray-900'
+                                        ? 'bg-[#059669] text-white rounded-br-none shadow-green-600/10'
+                                        : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none prose prose-sm prose-p:my-1 prose-ul:my-1 prose-li:my-0 prose-headings:text-gray-900 prose-headings:font-bold prose-a:text-green-600 prose-strong:text-gray-900'
                                         }`}>
                                         {msg.role === 'user' ? (
                                             msg.text
@@ -158,7 +216,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
                                             className="w-1 bg-[#10b981] rounded-full"
                                         />
                                     ))}
-                                    <p className="text-xs text-[#059669] font-bold ml-2">Listening...</p>
+                                    <p className="text-xs text-[#059669] font-bold ml-2">Listening (Nepali)...</p>
                                 </div>
                             )}
 

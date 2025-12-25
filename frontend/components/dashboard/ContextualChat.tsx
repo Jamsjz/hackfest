@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { generateChatResponse } from '../../lib/gemini-service';
 import { ChatMessage } from '../../lib/dashboard-types';
-import { Mic } from './ui/Icons';
+import { useDashboard } from '@/dashboard/DashboardContext';
 
 interface ContextualChatProps {
     context: string;
@@ -9,6 +9,7 @@ interface ContextualChatProps {
 }
 
 const ContextualChat: React.FC<ContextualChatProps> = ({ context, placeholder = "Ask specific questions..." }) => {
+    const { weather, user, crops, activeCropId } = useDashboard();
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -34,11 +35,21 @@ const ContextualChat: React.FC<ContextualChatProps> = ({ context, placeholder = 
         setInput("");
         setLoading(true);
 
+        // Enhance context with dashboard data
+        const activeCrop = crops.find(c => c.id === activeCropId);
+        const enhancedContext = `
+        ${context}
+        --- 
+        Farmer Info: ${user?.username || "Guest"} in ${user?.locationName || "Unknown"}
+        Current Environment: ${weather?.condition || "Sunny"}, ${weather?.tempMax || "28"}°C, Humidity ${weather?.humidity || "60"}%, Soil Moisture ${weather?.soilMoisture || "40"}%
+        Active Crop: ${activeCrop?.name || "None"}
+        `;
+
         try {
             const response = await generateChatResponse(
                 messages.map(m => ({ role: m.role, text: m.text })),
                 userMsg.text,
-                context
+                enhancedContext
             );
 
             setMessages(prev => [...prev, {
