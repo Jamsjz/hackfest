@@ -70,16 +70,47 @@ const CropWizard: React.FC<CropWizardProps> = ({ onComplete, onCancel }) => {
   };
 
   const getUserLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          handleLocationSelect(position.coords.latitude, position.coords.longitude);
-        },
-        (error) => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        handleLocationSelect(position.coords.latitude, position.coords.longitude);
+      },
+      async (error) => {
+        console.error("Error getting location", error);
+
+        // Try IP-based fallback
+        try {
+          const response = await fetch('https://ipapi.co/json/');
+          const data = await response.json();
+          if (data.latitude && data.longitude) {
+            handleLocationSelect(data.latitude, data.longitude);
+            return;
+          }
+        } catch (ipError) {
+          console.error("IP geolocation failed", ipError);
+        }
+
+        // Retry with low accuracy
+        if (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              handleLocationSelect(pos.coords.latitude, pos.coords.longitude);
+            },
+            () => {
+              alert('Could not detect location. Please select on map.');
+            },
+            { enableHighAccuracy: false, timeout: 10000 }
+          );
+        } else {
           alert('Could not detect location. Please select on map.');
         }
-      );
-    }
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
   };
 
   return (
@@ -149,8 +180,8 @@ const CropWizard: React.FC<CropWizardProps> = ({ onComplete, onCancel }) => {
                         key={crop}
                         onClick={() => setFormData({ ...formData, name: crop })}
                         className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${formData.name === crop
-                            ? 'bg-agri-600 text-white shadow-md'
-                            : 'bg-white text-agri-700 border border-agri-200 hover:border-agri-400'
+                          ? 'bg-agri-600 text-white shadow-md'
+                          : 'bg-white text-agri-700 border border-agri-200 hover:border-agri-400'
                           }`}
                       >
                         {index < 3 && <span className="mr-1">⭐</span>}
@@ -270,8 +301,8 @@ const CropWizard: React.FC<CropWizardProps> = ({ onComplete, onCancel }) => {
                     key={type}
                     onClick={() => setFormData({ ...formData, irrigationType: type as any })}
                     className={`p-3 rounded-lg border text-sm capitalize ${formData.irrigationType === type
-                        ? 'border-agri-500 bg-agri-50 text-agri-700 font-semibold'
-                        : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-agri-500 bg-agri-50 text-agri-700 font-semibold'
+                      : 'border-gray-200 hover:border-gray-300'
                       }`}
                   >
                     {type}

@@ -1,21 +1,29 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { useState, useEffect } from "react"
 
 // Floating particles component for wind effect
 function FloatingParticles() {
-  const particles = Array.from({ length: 15 }, (_, i) => ({
-    id: i,
-    size: Math.random() * 4 + 2,
-    delay: Math.random() * 5,
-    duration: Math.random() * 10 + 15,
-    startX: Math.random() * 100,
-    startY: Math.random() * 100,
-  }))
+  const [particles, setParticles] = useState<any[]>([]);
+
+  useEffect(() => {
+    const newParticles = Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      size: Math.random() * 4 + 2,
+      delay: Math.random() * 5,
+      duration: Math.random() * 10 + 15,
+      startX: Math.random() * 100,
+      startY: Math.random() * 100,
+    }));
+    setParticles(newParticles);
+  }, []);
+
+  if (particles.length === 0) return null;
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((particle) => (
+      {particles.map((particle: any) => (
         <motion.div
           key={particle.id}
           className="absolute rounded-full bg-[#D1FF1C]/20"
@@ -45,16 +53,23 @@ function FloatingParticles() {
 
 // Animated wind lines
 function WindLines() {
-  const lines = Array.from({ length: 6 }, (_, i) => ({
-    id: i,
-    y: 20 + i * 12,
-    delay: i * 0.4,
-    width: 100 + Math.random() * 150,
-  }))
+  const [lines, setLines] = useState<any[]>([]);
+
+  useEffect(() => {
+    const newLines = Array.from({ length: 6 }, (_, i) => ({
+      id: i,
+      y: 20 + i * 12,
+      delay: i * 0.4,
+      width: 100 + Math.random() * 150,
+    }));
+    setLines(newLines);
+  }, []);
+
+  if (lines.length === 0) return null;
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
-      {lines.map((line) => (
+      {lines.map((line: any) => (
         <motion.div
           key={line.id}
           className="absolute h-[1px] bg-gradient-to-r from-transparent via-[#D1FF1C] to-transparent"
@@ -80,7 +95,7 @@ function WindLines() {
 
 export default function SignatureMarqueeSection() {
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-center z-0 overflow-hidden">
+    <div className="relative w-full min-h-[60vh] flex flex-col items-center justify-center z-0 overflow-hidden">
       {/* Dynamic wind effects */}
       <FloatingParticles />
       <WindLines />
@@ -88,23 +103,24 @@ export default function SignatureMarqueeSection() {
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#1a1f1a]/10 to-transparent pointer-events-none" />
 
-      <div className="w-full flex flex-col items-center justify-center select-none pointer-events-none relative z-10 px-4">
+      <div className="w-full flex flex-col items-center justify-center select-none pointer-events-none relative z-10 px-6 py-12">
         {/* Nepali Agricultural Quote - 2 lines, larger font */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          viewport={{ once: true }}
           className="text-center"
         >
-          <h2 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-[1.1]">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tighter leading-[1.15]">
             {/* Line 1 */}
-            <span className="block">
+            <span className="block mb-4">
               <span className="text-[#D1FF1C] font-brier">माटोको</span>
               <span className="text-white"> काखमा, सुन </span>
               <span className="text-[#D1FF1C] font-brier">फुलाउँछौँ</span>
             </span>
             {/* Line 2 */}
-            <span className="block mt-2">
+            <span className="block">
               <span className="text-white">पसिनाको बलमा </span>
               <motion.span
                 className="text-[#D1FF1C] font-brier"
@@ -115,6 +131,7 @@ export default function SignatureMarqueeSection() {
               </motion.span>
             </span>
           </h2>
+          <div className="mt-10 mx-auto w-24 h-1 bg-gradient-to-r from-transparent via-[#D1FF1C] to-transparent opacity-50" />
         </motion.div>
       </div>
     </div>

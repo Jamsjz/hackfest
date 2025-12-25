@@ -40,8 +40,8 @@ export const metadata: Metadata = {
   description: "Transform Nepal's agriculture with AI-powered crop recommendations, weather insights, and sustainable farming practices.",
   generator: "KrishiBot",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/images/krishibot-main-logo.png",
+    apple: "/images/krishibot-main-logo.png",
   },
 }
 

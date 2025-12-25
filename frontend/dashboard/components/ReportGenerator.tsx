@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Leaf, CloudRain, Thermometer } from './ui/Icons';
-import ContextualChat from './ContextualChat';
 import { CropData } from '../types';
 
 interface ReportGeneratorProps {
@@ -9,16 +8,7 @@ interface ReportGeneratorProps {
 }
 
 const ReportGenerator: React.FC<ReportGeneratorProps> = ({ crops }) => {
-  // Generate a summary context for the AI
-  const reportContext = `
-    FARM REPORT SUMMARY:
-    Total Crops: ${crops.length}
-    Crops: ${crops.map(c => `${c.name} (${c.area} ${c.areaUnit})`).join(', ')}
-    Current Weather: Sunny, 28°C
-    Soil Status: Good moisture levels (42%)
-    Risks: Low water stress, Medium disease risk.
-    Recommendations: Monitor for pests in late vegetative stage.
-  `;
+
 
   return (
     <div className="space-y-6">
@@ -72,16 +62,6 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({ crops }) => {
           </div>
         </div>
 
-        <div className="border-t border-gray-100 pt-6">
-          <h3 className="font-bold text-gray-800 mb-2">Report Discussion</h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Ask questions about yield predictions, weather impacts, or export advice based on this report.
-          </p>
-          <ContextualChat 
-            context={reportContext} 
-            placeholder="E.g., What is my estimated yield for Rice?"
-          />
-        </div>
       </div>
     </div>
   );

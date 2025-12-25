@@ -6,8 +6,8 @@ import { Camera, X, Activity, AlertCircle, CheckCircle } from './ui/Icons';
 import { analyzeImage } from '../../lib/gemini-service';
 import * as api from '../../lib/api-service';
 import { AnalysisResult } from '../types';
-import ContextualChat from './ContextualChat';
 import { useDashboard } from '../DashboardContext';
+import ReactMarkdown from 'react-markdown';
 
 interface DiseaseDetectorProps {
   onClose?: () => void;
@@ -25,6 +25,15 @@ interface BackendDiseaseResult {
 
 const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = false }) => {
   const { isBackendConnected } = useDashboard();
+
+  // Custom components for ReactMarkdown to ensure proper styling without prose plugin
+  const markdownComponents: any = {
+    ul: ({ ...props }) => <ul className="list-disc pl-5 space-y-1 my-2" {...props} />,
+    ol: ({ ...props }) => <ol className="list-decimal pl-5 space-y-1 my-2" {...props} />,
+    li: ({ ...props }) => <li className="pl-1" {...props} />,
+    strong: ({ ...props }) => <span className="font-bold text-gray-900" {...props} />,
+    p: ({ ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+  };
   const [image, setImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -236,20 +245,20 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
                     </span>
                   </div>
                 </div>
-                <p className="text-sm text-red-800/80 leading-relaxed font-medium">{result.description}</p>
+                <div className="text-sm text-red-800/80 leading-relaxed font-medium prose prose-sm prose-red max-w-none">
+                  <ReactMarkdown components={markdownComponents}>{result.description}</ReactMarkdown>
+                </div>
 
                 <div className="bg-white p-4 rounded-xl border border-red-200/50 shadow-sm">
                   <p className="text-xs font-bold text-red-600 uppercase tracking-wider mb-2 flex items-center gap-1">
                     <Activity className="w-3 h-3" /> Recommended Treatment
                   </p>
-                  <p className="text-sm text-gray-700">{result.recommendation}</p>
+                  <div className="text-sm text-gray-700 prose prose-sm max-w-none">
+                    <ReactMarkdown components={markdownComponents}>{result.recommendation}</ReactMarkdown>
+                  </div>
                 </div>
               </div>
 
-              <ContextualChat
-                context={`Disease Analysis Result:\nDisease: ${result.title}\nSeverity/Desc: ${result.description}\nTreatment: ${result.recommendation}`}
-                placeholder="Ask about organic remedies, prevention..."
-              />
             </motion.div>
           )}
         </div>

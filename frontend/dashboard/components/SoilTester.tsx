@@ -6,7 +6,6 @@ import { Camera, X, Layers, AlertCircle, CheckCircle } from './ui/Icons';
 import { analyzeImage } from '../../lib/gemini-service';
 import * as api from '../../lib/api-service';
 import { AnalysisResult } from '../types';
-import ContextualChat from './ContextualChat';
 import { useDashboard } from '../DashboardContext';
 
 interface SoilTesterProps {
@@ -86,8 +85,8 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
     setError(null);
 
     try {
-      // Try backend first if connected and we have a file
-      if (isBackendConnected && useBackend && imageFile) {
+      // Strictly use backend ML model
+      if (isBackendConnected && imageFile) {
         try {
           const backendResponse = await api.predictSoilType(imageFile);
           setBackendResult(backendResponse);
@@ -107,21 +106,14 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
           setAnalyzing(false);
           return;
         } catch (backendError) {
-          console.warn('Backend analysis failed, falling back to Gemini:', backendError);
-          // Fall back to Gemini
+          console.error('Backend analysis failed:', backendError);
+          setError('ML Model analysis failed. Please ensure the backend is running.');
+          setAnalyzing(false);
+          return;
         }
+      } else {
+        setError('Backend is not connected. Cannot perform soil analysis.');
       }
-
-      // Use Gemini API for analysis
-      const jsonResponse = await analyzeImage(image, 'soil');
-      const parsed = JSON.parse(jsonResponse);
-      setResult({
-        title: parsed.title || "Unknown Soil Type",
-        description: parsed.description || "Could not analyze texture.",
-        recommendation: parsed.recommendation || "Consult an agronomist.",
-        confidence: 0.85,
-        type: 'soil'
-      });
     } catch (e) {
       console.error(e);
       setError('Analysis failed. Please try again.');
@@ -132,7 +124,7 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
 
   const renderContent = () => (
     <>
-      {/* Analysis Mode Toggle */}
+      {/* Analysis Mode Indicator */}
       <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
         <div className="flex items-center gap-2">
           {isBackendConnected ? (
@@ -141,20 +133,9 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
             <AlertCircle className="w-4 h-4 text-yellow-500" />
           )}
           <span className="text-xs font-medium text-gray-600">
-            {isBackendConnected ? 'ML Model Available' : 'Using AI Analysis'}
+            {isBackendConnected ? 'Using Backend ML Model' : 'Backend Disconnected'}
           </span>
         </div>
-        {isBackendConnected && (
-          <label className="flex items-center gap-2 cursor-pointer">
-            <span className="text-xs text-gray-500">Use ML Model</span>
-            <input
-              type="checkbox"
-              checked={useBackend}
-              onChange={(e) => setUseBackend(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
-            />
-          </label>
-        )}
       </div>
 
       {error && (
@@ -276,10 +257,6 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
                 </div>
               </div>
 
-              <ContextualChat
-                context={`Soil Analysis Result:\nType: ${result.title}\nDetails: ${result.description}\nAdvice: ${result.recommendation}`}
-                placeholder="Ask about fertilizer, crops, or irrigation..."
-              />
             </motion.div>
           )}
         </div>

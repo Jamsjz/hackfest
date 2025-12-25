@@ -8,9 +8,13 @@ export default function Home() {
     <main className="relative" style={{ position: "relative" }}>
       <Header />
       <HeroSection />
-      <div className="relative z-10" style={{ position: "relative" }}>
-        <MasonryGallerySection />
-        <CTASection />
+      <div className="relative" style={{ position: "relative" }}>
+        <div className="relative z-10">
+          <MasonryGallerySection />
+        </div>
+        <div className="relative z-20">
+          <CTASection />
+        </div>
       </div>
     </main>
   )
