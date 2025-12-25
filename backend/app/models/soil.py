@@ -37,9 +37,11 @@ def predict_soil_type_from_file(image_file: io.BytesIO):
     # Assuming predictions is a 2D array like [[0.1, 0.8, 0.1]]
     predicted_class_index = np.argmax(predictions, axis=1)[0]
 
+    confidence_score = float(np.max(predictions))
+
     if predicted_class_index < len(SOIL_TYPES):
         predicted_soil_type = SOIL_TYPES[predicted_class_index]
     else:
         predicted_soil_type = "Unknown"
 
-    return predicted_soil_type
+    return predicted_soil_type, confidence_score

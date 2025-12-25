@@ -59,17 +59,17 @@ export default function DashboardLayoutContent({ children }: { children: React.R
                 onLoad={() => setIsLeafletLoaded(true)}
             />
 
-            <div className="flex h-screen bg-[#f0fdf4] font-sans overflow-hidden relative text-gray-900">
+            <div className="flex min-h-screen bg-[#f0fdf4] font-sans relative text-gray-900">
                 {!user ? (
-                    <div className="w-full h-full overflow-y-auto relative z-0">
+                    <div className="w-full relative z-0">
                         <UserSetup onComplete={setUser} />
                     </div>
                 ) : (
                     <>
-                        {/* Sidebar */}
-                        <aside className="hidden md:flex flex-col w-24 bg-white border-r border-gray-200 py-6 px-2 items-center z-20">
-                            <div className="mb-8 w-14 h-14 relative rounded-full overflow-hidden shadow-lg border-2 border-green-100">
-                                <Image src="/logo.png" alt="KrishiBot" fill className="object-cover" />
+                        {/* Sidebar - Sticky */}
+                        <aside className="hidden md:flex flex-col w-24 bg-white/40 backdrop-blur-xl border-r border-white/20 py-6 px-2 items-center z-20 sticky top-0 h-screen">
+                            <div className="mb-8 w-22 h-22 relative rounded-full overflow-hidden shadow-lg border-2 border-green-100">
+                                <Image src="/images/krishibot-main-logo.png" alt="KrishiBot" fill className="object-cover" />
                             </div>
                             <div className="flex-1 w-full px-2">
                                 <SidebarItem
@@ -100,8 +100,8 @@ export default function DashboardLayoutContent({ children }: { children: React.R
                         </aside>
 
                         {/* Main Content */}
-                        <main className="flex-1 flex flex-col h-full relative overflow-hidden">
-                            {/* Header */}
+                        <main className="flex-1 flex flex-col relative">
+                            {/* Header - Sticky */}
                             <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-6 z-10 sticky top-0">
                                 <div className="text-left">
                                     <h1 className="text-xl font-bold text-gray-800">
@@ -123,15 +123,15 @@ export default function DashboardLayoutContent({ children }: { children: React.R
                                 </div>
                             </header>
 
-                            {/* Scrollable Body */}
-                            <div className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-6">
-                                <div className="max-w-5xl mx-auto h-full">
+                            {/* Content Body - Participates in root scroll */}
+                            <div className="flex-1 p-4 md:p-6 pb-24 md:pb-6">
+                                <div className="max-w-5xl mx-auto">
                                     {children}
                                 </div>
                             </div>
 
                             {/* Mobile Bottom Nav */}
-                            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-2 pb-safe z-30">
+                            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/40 backdrop-blur-xl border-t border-white/20 flex justify-around p-2 pb-safe z-30">
                                 <SidebarItem icon={LayoutGrid} label="Dashboard" path="/dashboard" active={pathname === '/dashboard'} />
                                 <SidebarItem icon={Bug} label="Detect" path="/dashboard/detect" active={pathname === '/dashboard/detect' || pathname.startsWith('/dashboard/detect')} />
                                 <SidebarItem icon={Layers} label="Test" path="/dashboard/test" active={pathname === '/dashboard/test' || pathname.startsWith('/dashboard/test')} />

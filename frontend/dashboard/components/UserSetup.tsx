@@ -35,9 +35,23 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
         setLocationCoords({ lat: latitude, lng: longitude });
         setIsSearching(false);
       },
-      (error) => {
+      async (error) => {
         console.error("Error getting location", error);
-        // If high accuracy fails, try once more with low accuracy
+
+        // Try IP-based fallback first as it's faster than a second timeout
+        try {
+          const response = await fetch('https://ipapi.co/json/');
+          const data = await response.json();
+          if (data.latitude && data.longitude) {
+            setLocationCoords({ lat: data.latitude, lng: data.longitude });
+            setIsSearching(false);
+            return;
+          }
+        } catch (ipError) {
+          console.error("IP geolocation failed", ipError);
+        }
+
+        // If high accuracy and IP fallback both fail, try low accuracy browser geolocation
         if (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE) {
           navigator.geolocation.getCurrentPosition(
             (pos) => {
@@ -57,7 +71,7 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
           setIsSearching(false);
         }
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
     );
   };
 
@@ -133,7 +147,7 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="glass-panel w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-10 border border-white/50 bg-white/60 backdrop-blur-xl"
+        className="w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-10 border border-white/30 bg-white/40 backdrop-blur-xl"
       >
         {/* Left Panel - Welcome */}
         <div className="md:w-5/12 relative flex flex-col justify-between p-10 bg-agri-700 text-white overflow-hidden">
@@ -144,8 +158,8 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
           <div className="absolute bottom-[-20%] left-[-20%] w-64 h-64 bg-black/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="relative z-10">
-            <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mb-8 border border-white/20 shadow-lg ring-1 ring-white/30 overflow-hidden relative">
-              <Image src="/logo.png" alt="KrishiBot" fill className="object-cover" />
+            <div className="w-36 h-36 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mb-8 border border-white/20 shadow-lg ring-1 ring-white/30 overflow-hidden relative">
+              <Image src="/images/krishibot-main-logo.png" alt="KrishiBot" fill className="object-cover" />
             </div>
 
             <h1 className="text-4xl font-bold mb-4 tracking-tight text-shadow-sm">

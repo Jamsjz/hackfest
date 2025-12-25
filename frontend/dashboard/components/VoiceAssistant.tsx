@@ -115,7 +115,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
             initial={{ opacity: 0, y: 100, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            className={`fixed right-4 md:right-6 w-[90vw] md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-[1000] overflow-hidden flex flex-col max-h-[600px] ${chatWindowPosition}`}
+            className={`fixed right-4 md:right-6 w-[90vw] md:w-96 bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30 z-[1000] overflow-hidden flex flex-col max-h-[600px] ${chatWindowPosition}`}
             style={{ height: '65vh' }}
           >
             {/* Header */}
@@ -156,7 +156,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
             )}
 
             {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-transparent custom-scrollbar">
               {messages.length === 0 && (
                 <div className="text-center text-gray-400 mt-10 space-y-4">
                   <div className="w-20 h-20 bg-gradient-to-tr from-agri-100 to-emerald-50 rounded-full flex items-center justify-center mx-auto mb-2 border-4 border-white shadow-sm overflow-hidden">
@@ -195,7 +195,7 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
             </div>
 
             {/* Input Area */}
-            <div className="p-3 bg-white border-t border-gray-100 z-10">
+            <div className="p-3 bg-white/50 backdrop-blur-md border-t border-white/10 z-10">
               {isListening && (
                 <div className="flex justify-center items-center py-2 space-x-1">
                   {[1, 2, 3, 4, 5].map(i => (

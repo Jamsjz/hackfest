@@ -6,8 +6,8 @@ import { Camera, X, Activity, AlertCircle, CheckCircle } from './ui/Icons';
 import { analyzeImage } from '../../lib/gemini-service';
 import * as api from '../../lib/api-service';
 import { AnalysisResult } from '../types';
-import ContextualChat from './ContextualChat';
 import { useDashboard } from '../DashboardContext';
+import ReactMarkdown from 'react-markdown';
 
 interface DiseaseDetectorProps {
   onClose?: () => void;
@@ -25,6 +25,15 @@ interface BackendDiseaseResult {
 
 const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = false }) => {
   const { isBackendConnected } = useDashboard();
+
+  // Custom components for ReactMarkdown to ensure proper styling without prose plugin
+  const markdownComponents: any = {
+    ul: ({ ...props }) => <ul className="list-disc pl-5 space-y-1 my-2" {...props} />,
+    ol: ({ ...props }) => <ol className="list-decimal pl-5 space-y-1 my-2" {...props} />,
+    li: ({ ...props }) => <li className="pl-1" {...props} />,
+    strong: ({ ...props }) => <span className="font-bold text-gray-900" {...props} />,
+    p: ({ ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+  };
   const [image, setImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -222,7 +231,7 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
             >
-              <div className="bg-red-50 rounded-2xl p-5 border border-red-100 space-y-3">
+              <div className="bg-white/40 backdrop-blur-md rounded-2xl p-5 border border-white/20 shadow-lg space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-xl text-red-900">{result.title}</h4>
                   <div className="flex items-center gap-2">
@@ -236,20 +245,20 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
                     </span>
                   </div>
                 </div>
-                <p className="text-sm text-red-800/80 leading-relaxed font-medium">{result.description}</p>
+                <div className="text-sm text-red-800/80 leading-relaxed font-medium prose prose-sm prose-red max-w-none">
+                  <ReactMarkdown components={markdownComponents}>{result.description}</ReactMarkdown>
+                </div>
 
-                <div className="bg-white p-4 rounded-xl border border-red-200/50 shadow-sm">
+                <div className="bg-white/50 backdrop-blur-sm p-4 rounded-xl border border-white/20 shadow-sm">
                   <p className="text-xs font-bold text-red-600 uppercase tracking-wider mb-2 flex items-center gap-1">
                     <Activity className="w-3 h-3" /> Recommended Treatment
                   </p>
-                  <p className="text-sm text-gray-700">{result.recommendation}</p>
+                  <div className="text-sm text-gray-700 prose prose-sm max-w-none">
+                    <ReactMarkdown components={markdownComponents}>{result.recommendation}</ReactMarkdown>
+                  </div>
                 </div>
               </div>
 
-              <ContextualChat
-                context={`Disease Analysis Result:\nDisease: ${result.title}\nSeverity/Desc: ${result.description}\nTreatment: ${result.recommendation}`}
-                placeholder="Ask about organic remedies, prevention..."
-              />
             </motion.div>
           )}
         </div>
@@ -259,13 +268,13 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
 
   if (isPage) {
     return (
-      <div className="w-full max-w-2xl mx-auto h-full flex flex-col bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="flex justify-between items-center p-5 border-b border-gray-100 flex-shrink-0 bg-white z-10">
+      <div className="w-full max-w-2xl mx-auto h-full flex flex-col bg-white/60 backdrop-blur-lg rounded-3xl shadow-xl border border-white/30 overflow-hidden">
+        <div className="flex justify-between items-center p-5 border-b border-white/10 flex-shrink-0 bg-transparent z-10">
           <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <Activity className="text-red-500 w-6 h-6" /> Plant Doctor
           </h3>
         </div>
-        <div className="p-6 overflow-y-auto custom-scrollbar bg-white flex-1">
+        <div className="p-6 overflow-y-auto custom-scrollbar bg-transparent flex-1">
           {renderContent()}
         </div>
       </div>
@@ -284,18 +293,18 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 10 }}
         transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-        className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col relative"
+        className="bg-white/70 backdrop-blur-xl w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col relative border border-white/30"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center p-5 border-b border-gray-100 flex-shrink-0 bg-white z-10">
+        <div className="flex justify-between items-center p-5 border-b border-white/10 flex-shrink-0 bg-transparent z-10">
           <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <Activity className="text-red-500 w-6 h-6" /> Plant Doctor
           </h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto custom-scrollbar bg-white">
+        <div className="p-6 overflow-y-auto custom-scrollbar bg-transparent">
           {renderContent()}
         </div>
       </motion.div>

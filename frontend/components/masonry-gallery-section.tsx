@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useEffect } from "react"
 import Image from "next/image"
 import { motion, useScroll, useTransform } from "framer-motion"
 
@@ -33,14 +33,11 @@ export default function MasonryGallerySection() {
     offset: ["start start", "end end"],
   })
 
-  // Background transition: Dark Green -> Gray -> White
-  const backgroundColor = useTransform(scrollYProgress, [0, 0.6, 0.9], ["#282c20", "#ccc", "#ffffff"])
+  // Background transition: Dark Green -> Deep Forest -> Black-Green
+  const backgroundColor = useTransform(scrollYProgress, [0, 0.6, 1], ["#282c20", "#1a2416", "#0a0c0a"])
 
   // Y Movement: Move grid up to reveal all images
-  const y = useTransform(scrollYProgress, [0, 1], ["0vh", "-50vh"])
-
-
-
+  const y = useTransform(scrollYProgress, [0, 1], ["0vh", "-30vh"])
 
   return (
     <section
@@ -48,7 +45,7 @@ export default function MasonryGallerySection() {
       id="masonry-gallery"
       className="relative"
       style={{
-        height: "120vh",
+        height: "100vh",
         position: "relative",
       }}
     >

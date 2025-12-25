@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Leaf, CloudRain, Thermometer } from './ui/Icons';
-import ContextualChat from './ContextualChat';
 import { CropData } from '../types';
 
 interface ReportGeneratorProps {
@@ -9,20 +8,11 @@ interface ReportGeneratorProps {
 }
 
 const ReportGenerator: React.FC<ReportGeneratorProps> = ({ crops }) => {
-  // Generate a summary context for the AI
-  const reportContext = `
-    FARM REPORT SUMMARY:
-    Total Crops: ${crops.length}
-    Crops: ${crops.map(c => `${c.name} (${c.area} ${c.areaUnit})`).join(', ')}
-    Current Weather: Sunny, 28°C
-    Soil Status: Good moisture levels (42%)
-    Risks: Low water stress, Medium disease risk.
-    Recommendations: Monitor for pests in late vegetative stage.
-  `;
+
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div className="bg-white/60 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-white/30">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <FileText className="text-agri-600" /> Farm Report
@@ -33,7 +23,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({ crops }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-agri-50 p-5 rounded-xl border border-agri-100">
+          <div className="bg-white/40 backdrop-blur-md p-5 rounded-xl border border-white/20 shadow-sm">
             <h3 className="font-semibold text-agri-800 mb-3 flex items-center gap-2">
               <Leaf className="w-4 h-4" /> Crop Status
             </h3>
@@ -51,7 +41,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({ crops }) => {
             )}
           </div>
 
-          <div className="bg-sky-50 p-5 rounded-xl border border-sky-100">
+          <div className="bg-white/40 backdrop-blur-md p-5 rounded-xl border border-white/20 shadow-sm">
             <h3 className="font-semibold text-sky-800 mb-3 flex items-center gap-2">
               <CloudRain className="w-4 h-4" /> Environmental Summary
             </h3>
@@ -72,16 +62,6 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({ crops }) => {
           </div>
         </div>
 
-        <div className="border-t border-gray-100 pt-6">
-          <h3 className="font-bold text-gray-800 mb-2">Report Discussion</h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Ask questions about yield predictions, weather impacts, or export advice based on this report.
-          </p>
-          <ContextualChat 
-            context={reportContext} 
-            placeholder="E.g., What is my estimated yield for Rice?"
-          />
-        </div>
       </div>
     </div>
   );

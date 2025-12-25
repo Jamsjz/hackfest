@@ -84,51 +84,36 @@ export default function Header() {
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "backdrop-blur-md" : "bg-transparent"
           }`}
       >
-        <div className="mx-auto px-6 md:px-12 flex items-center justify-between h-16">
+        <div className="w-full px-4 md:px-6 flex items-center justify-between h-32">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="flex flex-col justify-center items-start mix-blend-difference"
+            className="flex flex-col justify-center items-start"
           >
-            <Link href="/" className="flex items-center gap-3 group">
+            <Link href="/" className="flex items-center gap-1 group">
               <motion.div
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.7 }}
-                className="relative w-10 h-10 md:w-12 md:h-12"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
+                className="relative w-28 h-28 md:w-36 md:h-36"
               >
                 <Image
-                  src="/logo.png"
-                  alt="KrishiBot"
+                  src="/images/krishibot-main-logo.png"
+                  alt="KrishiBot Logo"
                   fill
-                  className="object-contain"
+                  className="object-contain drop-shadow-2xl font-black"
                   priority
                 />
               </motion.div>
-              <h1
-                className={`font-brier text-3xl md:text-4xl leading-none mt-1 tracking-tight font-bold transition-colors duration-300 group-hover:text-lorenzo-accent ${logoColor === "white" ? "text-white" : "text-lorenzo-dark"
-                  }`}
-              >
-                KRISHIBOT
-              </h1>
+              <div className="flex flex-col ml-[-8px]">
+                <span className="text-white font-black text-3xl md:text-5xl tracking-tighter uppercase group-hover:text-[#D1FF1C] transition-colors duration-300 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+                  Krishi<span className="text-[#D1FF1C] group-hover:text-white transition-colors">Bot</span>
+                </span>
+                <span className="text-[10px] md:text-xs text-white/40 font-mono tracking-[0.4em] uppercase -mt-1 ml-1">
+                  Nepal's AG Future
+                </span>
+              </div>
             </Link>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex items-center gap-4 mix-blend-difference"
-          >
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 bg-lorenzo-dark/80 border border-white/30 hover:bg-lorenzo-dark rounded-lg transition-colors text-white px-3 py-2.5"
-              aria-label="Menu"
-            >
-              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </motion.button>
           </motion.div>
         </div>
       </motion.header>

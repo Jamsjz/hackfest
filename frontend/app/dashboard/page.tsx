@@ -6,7 +6,18 @@ import Dashboard from '@/dashboard/components/Dashboard';
 import { useDashboard } from '@/dashboard/DashboardContext';
 
 export default function DashboardPage() {
-    const { crops, activeCropId, weather, weatherLoading, weatherError, refreshWeather, isBackendConnected } = useDashboard();
+    const {
+        crops,
+        activeCropId,
+        weather,
+        weatherLoading,
+        weatherError,
+        refreshWeather,
+        isBackendConnected,
+        cropRecommendations,
+        recommendationsLoading,
+        refreshRecommendations
+    } = useDashboard();
     const router = useRouter();
 
     // Convert backend weather to Dashboard format with fallback
@@ -42,6 +53,9 @@ export default function DashboardPage() {
             isBackendConnected={isBackendConnected}
             soilData={weather?.soilData}
             dailyForecast={weather?.dailyData}
+            cropRecommendations={cropRecommendations}
+            recommendationsLoading={recommendationsLoading}
+            onRefreshRecommendations={refreshRecommendations}
         />
     );
 }

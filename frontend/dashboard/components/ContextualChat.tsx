@@ -74,7 +74,7 @@ const ContextualChat: React.FC<ContextualChatProps> = ({ context, placeholder = 
   };
 
   return (
-    <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 mt-4 flex flex-col h-[300px]">
+    <div className="bg-white/40 backdrop-blur-md rounded-xl p-4 border border-white/20 mt-4 flex flex-col h-[300px] shadow-sm">
       <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${isBackendConnected ? 'bg-green-500' : 'bg-yellow-500'} animate-pulse`}></div>

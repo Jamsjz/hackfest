@@ -452,10 +452,7 @@ export default function InteractivePortrait() {
       className="absolute inset-0 w-full h-full bg-[#1a1f1a] cursor-crosshair overflow-hidden"
       style={{ touchAction: "none" }}
     >
-      <div className="absolute bottom-8 left-8 z-10 pointer-events-none flex flex-col gap-2">
-        <span className="text-white/60 text-xs font-mono uppercase tracking-widest">Powered by</span>
-        <span className="text-[#D1FF1C] text-2xl font-bold font-brier">KrishiBot</span>
-      </div>
+
       <div className="absolute bottom-8 right-8 z-10 pointer-events-none text-right">
         <span className="text-white/40 text-xs font-mono">Move cursor to reveal</span>
         <br />
