@@ -51,7 +51,7 @@ async def get_weather_data(
     params = {
         "latitude": latitude,
         "longitude": longitude,
-        "daily": ["temperature_2m_max", "temperature_2m_min"],
+        "daily": ["temperature_2m_max", "temperature_2m_min", "precipitation_sum", "rain_sum"],
         "hourly": [
             "relative_humidity_2m",
             "precipitation",
@@ -65,6 +65,7 @@ async def get_weather_data(
         ],
         "forecast_days": 16,
     }
+
 
     try:
         responses = openmeteo.weather_api(url, params=params)
@@ -112,11 +113,14 @@ async def get_weather_data(
         ),
         "temperature_2m_max": daily.Variables(0).ValuesAsNumpy(),
         "temperature_2m_min": daily.Variables(1).ValuesAsNumpy(),
+        "precipitation_sum": daily.Variables(2).ValuesAsNumpy(),
+        "rain_sum": daily.Variables(3).ValuesAsNumpy(),
     }
 
     daily_dataframe = pd.DataFrame(data=daily_data)
     daily_dataframe = daily_dataframe.replace([np.inf, -np.inf], np.nan)
     daily_dataframe = daily_dataframe.where(pd.notnull(daily_dataframe), None)
+
 
     # --- PROCESS AGGREGATES ---
     temp_mean = np.nanmean(hourly_data["temperature_2m"])

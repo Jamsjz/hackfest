@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Leaf, CloudRain, Thermometer, Activity, Layers, ArrowRight, Bug, FileText, RefreshCw, AlertCircle, Sun, Cloud, Zap, Sparkles } from './ui/Icons';
 import { CropData, WeatherData } from '../types';
 import ForecastingWidget from './ForecastingWidget';
+import ForecastingHub from './ForecastingHub';
+
 
 interface SoilData {
   ph: number;
@@ -244,306 +246,24 @@ const Dashboard: React.FC<DashboardProps> = ({
         </section>
       )}
 
-      {/* Section 2: Farm Summary & Crop Recommendations SIDE BY SIDE */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch mb-6">
-        {/* Column 1: Farm Summary */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-white/60 backdrop-blur-lg rounded-2xl border border-white/30 shadow-xl p-6 flex flex-col"
-        >
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="bg-emerald-50 p-2.5 rounded-lg border border-emerald-100">
-                <FileText className="w-5 h-5 text-emerald-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-800 text-lg">Farm Summary</h3>
-                <p className="text-xs text-gray-400 font-medium">
-                  {isBackendConnected ? 'REAL-TIME DATA' : 'DEMO DATA'}
-                </p>
-              </div>
-            </div>
-            <div className="px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full border border-green-200 flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-              OPTIMAL
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <p className="text-xs text-gray-500 font-bold uppercase mb-1">Active Cultivation</p>
-              {activeCrop ? (
-                <div>
-                  <p className="text-lg font-bold text-gray-800">{activeCrop.name}</p>
-                  <p className="text-xs text-gray-500">{activeCrop.area} {activeCrop.areaUnit} • {activeCrop.variety}</p>
-                </div>
-              ) : (
-                <p className="text-sm text-gray-400 italic">No active crops</p>
-              )}
-            </div>
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <p className="text-xs text-gray-500 font-bold uppercase mb-1">Soil Index</p>
-              <p className="text-lg font-bold text-gray-800">{soilIndex.value}/10</p>
-              <p className={`text-xs font-medium ${soilIndex.status === 'Nutrient Rich' ? 'text-green-600' : soilIndex.status === 'Moderate' ? 'text-yellow-600' : 'text-red-600'}`}>
-                {soilIndex.status}
-              </p>
-            </div>
-          </div>
 
-          <div className="space-y-3 flex-grow">
-            <h4 className="text-xs font-bold text-gray-400 uppercase">Recent Alerts & Tasks</h4>
-
-            <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer border border-transparent hover:border-gray-100">
-              <div className="mt-1 bg-blue-50 p-1.5 rounded-md">
-                <CloudRain className="w-4 h-4 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-700">Irrigation Schedule</p>
-                <p className="text-xs text-gray-500">
-                  {weather.rain > 5
-                    ? 'Recommended to hold irrigation due to rain forecast.'
-                    : 'Check irrigation - low rainfall detected.'
-                  }
-                </p>
-              </div>
-              <span className="ml-auto text-xs text-gray-400 font-mono">Today</span>
-            </div>
-
-            <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer border border-transparent hover:border-gray-100">
-              <div className="mt-1 bg-amber-50 p-1.5 rounded-md">
-                <Bug className="w-4 h-4 text-amber-500" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-700">Pest Monitoring</p>
-                <p className="text-xs text-gray-500">
-                  {weather.humidity > 80
-                    ? 'High humidity - increased pest risk. Monitor closely.'
-                    : 'Low risk of fall armyworm in this region.'
-                  }
-                </p>
-              </div>
-              <span className="ml-auto text-xs text-gray-400 font-mono">Yesterday</span>
-            </div>
-          </div>
-
-          {onAddCrop && !activeCrop && (
-            <button
-              onClick={onAddCrop}
-              className="mt-4 w-full py-3 border border-dashed border-gray-300 rounded-xl text-gray-500 font-medium hover:bg-gray-50 hover:border-gray-400 transition-all flex items-center justify-center gap-2"
-            >
-              <Leaf className="w-4 h-4" /> Add New Crop
-            </button>
-          )}
-        </motion.div>
-
-        {/* Column 2: AI Crop Recommendation System */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="bg-white/60 backdrop-blur-lg rounded-2xl border border-white/30 shadow-xl p-6 flex flex-col relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-agri-600">
-            <Sparkles className="w-20 h-20" />
-          </div>
-
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="bg-agri-50 p-2.5 rounded-lg border border-agri-100">
-                <Sparkles className="w-5 h-5 text-agri-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-800 text-lg">AI Precision Planting</h3>
-                <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Recommended for your soil</p>
-              </div>
-            </div>
-            {onRefreshRecommendations && (
-              <button
-                onClick={onRefreshRecommendations}
-                className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
-                disabled={recommendationsLoading}
-              >
-                <RefreshCw className={`w-3.5 h-3.5 text-gray-400 ${recommendationsLoading ? 'animate-spin' : ''}`} />
-              </button>
-            )}
-          </div>
-
-          <div className="space-y-3 flex-grow">
-            {recommendationsLoading ? (
-              [1, 2, 3].map(i => (
-                <div key={i} className="h-12 bg-gray-50 rounded-xl animate-pulse border border-gray-100"></div>
-              ))
-            ) : cropRecommendations && cropRecommendations.length > 0 ? (
-              cropRecommendations.map((crop, idx) => (
-                <div
-                  key={crop}
-                  className={`flex items-center justify-between p-3 rounded-xl border transition-all hover:shadow-sm hover:scale-[1.02] cursor-default
-                    ${idx === 0 ? 'bg-gradient-to-r from-agri-50 to-emerald-50 border-agri-200' : 'bg-white border-gray-100'}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold 
-                      ${idx === 0 ? 'bg-agri-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
-                      {idx + 1}
-                    </div>
-                    <span className={`font-bold ${idx === 0 ? 'text-agri-900' : 'text-gray-700'}`}>{crop}</span>
-                  </div>
-                  {idx === 0 && (
-                    <span className="text-[10px] font-bold bg-agri-600 text-white px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                      Best Choice
-                    </span>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                <p className="text-sm text-gray-400 italic">No recommendations available</p>
-                <p className="text-[10px] text-gray-400 mt-1">Connect backend to enable AI insights</p>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-4 pt-4 border-t border-gray-50">
-            <p className="text-[10px] text-gray-400 leading-tight">
-              *Predictions are based on NARC Nepal soil data and OpenMeteo weather forecasts for your specific coordinates.
-            </p>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Section 3: Full-Width Forecasting System */}
-      <section className="space-y-6">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="bg-white/60 backdrop-blur-lg rounded-2xl border border-white/30 shadow-xl overflow-hidden"
-        >
-          {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-indigo-50 p-2.5 rounded-lg border border-indigo-100">
-                <Activity className="w-5 h-5 text-indigo-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-800 text-lg">Forecasting System</h3>
-                <p className="text-xs text-gray-400 font-medium">AI PREDICTIVE MODELS • 15-DAY SIMULATION</p>
-              </div>
-            </div>
-            <div className="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full border border-indigo-200">
-              LIVE PREDICTIONS
-            </div>
-          </div>
-
-          {/* AI Growth Simulation Widget */}
-          {weather.agriForecast && weather.agriForecast.length > 0 && (
-            <div className="p-6 border-b border-gray-100">
-              <ForecastingWidget
-                forecast={weather.agriForecast}
-                cropName={activeCrop ? activeCrop.name : "Rice"}
-              />
-            </div>
-          )}
-
-          {/* Yield + Weather + Disease Grid */}
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Yield Prediction */}
-              <div className="p-5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl text-white relative overflow-hidden shadow-lg">
-                <div className="relative z-10">
-                  <p className="text-indigo-100 text-xs font-bold uppercase mb-1">Estimated Yield</p>
-                  <h4 className="text-3xl font-bold mb-1">
-                    {weather.humidity > 60 && weather.tempMax < 35 && weather.tempMax > 15 ? 'High' : 'Moderate'}
-                  </h4>
-                  <span className="text-sm bg-white/20 px-2 py-0.5 rounded backdrop-blur-sm font-medium border border-white/10">
-                    {weather.humidity > 60 ? '+12%' : '+5%'} vs Avg
-                  </span>
-                  <p className="text-xs text-indigo-100 opacity-80 mt-2">
-                    Based on {isBackendConnected ? 'real-time' : 'simulated'} weather and soil data.
-                  </p>
-                </div>
-                <Activity className="absolute -right-4 -bottom-4 w-24 h-24 text-white opacity-10 rotate-12" />
-              </div>
-
-              {/* Weather Outlook */}
-              <div className="p-5 rounded-2xl border border-gray-100 bg-white/80">
-                <p className="text-xs text-gray-500 font-bold uppercase mb-4">Weather Outlook</p>
-                <div className="space-y-3">
-                  {dailyForecast && dailyForecast.length > 1 ? (
-                    <>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600">Tomorrow</span>
-                        <div className="flex items-center gap-2">
-                          <CloudRain className="w-4 h-4 text-blue-500" />
-                          <span className="font-bold text-gray-800">{dailyForecast[1]?.temperature_2m_max?.toFixed(0) || 22}°C</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600">Day After</span>
-                        <div className="flex items-center gap-2">
-                          <Sun className="w-4 h-4 text-amber-500" />
-                          <span className="font-bold text-gray-800">{dailyForecast[2]?.temperature_2m_max?.toFixed(0) || 25}°C</span>
-                        </div>
-                      </div>
-                      {dailyForecast[3] && (
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-gray-600">+3 Days</span>
-                          <div className="flex items-center gap-2">
-                            <Cloud className="w-4 h-4 text-gray-500" />
-                            <span className="font-bold text-gray-800">{dailyForecast[3]?.temperature_2m_max?.toFixed(0)}°C</span>
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600">Tomorrow</span>
-                        <div className="flex items-center gap-2">
-                          <CloudRain className="w-4 h-4 text-blue-500" />
-                          <span className="font-bold text-gray-800">22°C</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600">Day After</span>
-                        <div className="flex items-center gap-2">
-                          <Sun className="w-4 h-4 text-amber-500" />
-                          <span className="font-bold text-gray-800">25°C</span>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Disease Risk */}
-              <div className="p-5 rounded-2xl border border-gray-100 bg-white/80">
-                <p className="text-xs text-gray-500 font-bold uppercase mb-4">Disease Risk Assessment</p>
-                <div className="flex flex-col justify-center h-full">
-                  <div className="mb-4">
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
-                      <span>Risk Level</span>
-                      <span>{weather.humidity > 80 ? '50%' : '20%'}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                      <div
-                        className={`h-3 rounded-full transition-all duration-500 ${weather.humidity > 80 ? 'bg-yellow-500 w-[50%]' : 'bg-green-500 w-[20%]'}`}
-                      ></div>
-                    </div>
-                  </div>
-                  <p className="text-lg font-bold text-gray-700 text-center">
-                    {weather.humidity > 80 ? 'Medium Risk' : 'Low Risk'}
-                  </p>
-                  <p className="text-[10px] text-gray-400 text-center mt-1">
-                    {weather.humidity > 80 ? 'High humidity may cause fungal issues' : 'Conditions favorable for healthy growth'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </section>
+      {/* Section 3: Full-Width Forecasting Hub */}
+      {weather.agriForecast && weather.agriForecast.daily && weather.agriForecast.daily.length > 0 && (
+        <section className="space-y-6">
+          <ForecastingHub
+            forecast={weather.agriForecast}
+            cropName={activeCrop?.name || "Rice"}
+            activeCrop={activeCrop}
+            cropRecommendations={cropRecommendations}
+            recommendationsLoading={recommendationsLoading}
+            onRefreshRecommendations={onRefreshRecommendations}
+            soilData={soilData}
+            isBackendConnected={isBackendConnected}
+            onAddCrop={onAddCrop}
+          />
+        </section>
+      )}
     </div>
   );
 };
