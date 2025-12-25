@@ -35,17 +35,17 @@ async def register_user(
 
 @router.get("/me", response_model=schemas.UserOut)
 async def read_users_me(
-    user_in: schemas.UserIn,
+    username: str,
     response: Response,
     db: AsyncSession = Depends(get_db),
 ):
     """
     Get current user profile.
     """
-    user = await auth.get_user_by_username(username=user_in.username, db=db)
+    user = await auth.get_user_by_username(username=username, db=db)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    response.set_cookie(key="username", value=user_in.username)
+    response.set_cookie(key="username", value=username)
     return user
 
 

@@ -1,0 +1,9 @@
+{
+  "name": "Kheti-Pati Precision Ag",
+  "description": "A precision agriculture platform for farmers with AI-driven insights, weather tracking, and Nepali voice assistance.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
