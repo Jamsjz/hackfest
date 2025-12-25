@@ -3,11 +3,15 @@ import os
 import google.generativeai as genai
 from fastapi import APIRouter, HTTPException
 from app.reqtypes import schemas
+from dotenv import load_dotenv
+
+load_dotenv("app/.env")
 
 router = APIRouter()
 
 # Configure Gemini API
-API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("API_KEY")
+API_KEY = os.getenv("GEMINI_API_KEY")
+
 if API_KEY:
     genai.configure(api_key=API_KEY)
 else:
@@ -22,7 +26,7 @@ async def chat_message(request: schemas.ChatRequest):
         }
 
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         
         system_instruction = """You are "कृषिबिद" (Krishibid), a helpful, friendly, and knowledgeable Nepali farming assistant AI (AgriBot). 
     You speak in a mix of English and Nepali (Romanized or Devanagari) to help farmers.
@@ -49,7 +53,7 @@ async def chat_message(request: schemas.ChatRequest):
         # However, checking `google-generativeai>=0.8.6` means it likely supports system instructions in `GenerativeModel`.
         
         # Re-initializing model with system instruction
-        model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_instruction)
+        model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=system_instruction)
         chat = model.start_chat(history=gemini_history)
 
         response = chat.send_message(request.message)

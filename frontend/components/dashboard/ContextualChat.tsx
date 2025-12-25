@@ -70,8 +70,8 @@ const ContextualChat: React.FC<ContextualChatProps> = ({ context, placeholder = 
                 {messages.map((msg) => (
                     <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[85%] p-2 px-3 rounded-lg text-sm ${msg.role === 'user'
-                                ? 'bg-[#059669] text-white rounded-br-none'
-                                : 'bg-white text-gray-800 border border-gray-200 shadow-sm rounded-bl-none'
+                            ? 'bg-[#059669] text-white rounded-br-none'
+                            : 'bg-white text-gray-800 border border-gray-200 shadow-sm rounded-bl-none'
                             }`}>
                             {msg.text}
                         </div>

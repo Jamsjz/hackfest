@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 
 const getAiClient = () => {
     // Use NEXT_PUBLIC_ for client-side access in Next.js
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
     if (!apiKey) {
         console.warn("GEMINI_API_KEY is missing. AI features will use mock responses.");
         return null;
@@ -23,8 +23,8 @@ export const generateChatResponse = async (
     }
 
     try {
-        // Corrected model name if necessary, though 'gemini-1.5-flash' is standard
-        const model = 'gemini-1.5-flash';
+        // Corrected model name if necessary, though 'gemini-2.5-flash' is standard
+        const model = 'gemini-2.5-flash';
         let systemInstruction = `You are "कृषिबिद" (Krishibid), a helpful, friendly, and knowledgeable Nepali farming assistant AI (AgriBot). 
     You speak in a mix of English and Nepali (Romanized or Devanagari) to help farmers.
     You provide advice on crops, weather, diseases, and irrigation.
@@ -68,7 +68,7 @@ export const analyzeImage = async (
     }
 
     try {
-        const model = 'gemini-1.5-flash';
+        const model = 'gemini-2.5-flash';
         const prompt = type === 'disease'
             ? "Analyze this plant image for diseases. Return a JSON object with keys: title (disease name), description (severity and visual signs), recommendation (treatment). Do not use markdown formatting."
             : "Analyze this soil image. Return a JSON object with keys: title (soil type), description (moisture and texture), recommendation (crops suitable and improvements). Do not use markdown formatting.";
