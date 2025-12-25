@@ -4,7 +4,7 @@ export interface CropData {
   variety: string;
   plantingDate: string;
   area: number;
-  areaUnit: 'hectare' | 'acre' | 'ropani';
+  areaUnit: 'hectare' | 'acre' | 'ropani' | 'bigha';
   irrigationType: 'rainfed' | 'drip' | 'sprinkler' | 'flood';
   location: {
     lat: number;

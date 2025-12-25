@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import MapWidget from './MapWidget';
-import { User, MapPin, Search, ArrowRight, Leaf, CloudRain, Activity, Navigation } from './ui/Icons';
-import { UserProfile } from '../types';
+import { User, MapPin, Search, ArrowRight, Leaf, CloudRain, Activity, Navigation, AlertCircle, CheckCircle } from './ui/Icons';
+import { useDashboard } from '../DashboardContext';
 
 interface UserSetupProps {
-  onComplete: (profile: UserProfile) => void;
+  onComplete: (profile: any) => void;
 }
 
 const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
+  const { loginUser, isBackendConnected } = useDashboard();
   const [username, setUsername] = useState('');
   const [locationName, setLocationName] = useState('');
   const [locationCoords, setLocationCoords] = useState<{ lat: number, lng: number } | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Default coordinates (Kathmandu) for map initialization if no search/selection
   const defaultLat = 27.7172;
@@ -82,13 +86,35 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
     setLocationCoords({ lat, lng });
   };
 
-  const handleSubmit = () => {
-    if (username && (locationName || locationCoords)) {
+  const handleSubmit = async () => {
+    if (!username || (!locationName && !locationCoords)) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    const coords = locationCoords || { lat: defaultLat, lng: defaultLng };
+    const locName = locationName || "Pinned Location";
+
+    try {
+      // Try to login/register with backend
+      const success = await loginUser(username, coords.lat, coords.lng, locName);
+
+      if (success) {
+        console.log("Successfully registered with backend");
+      } else {
+        console.log("Running in offline mode");
+      }
+
+      // Complete the setup (context already updated by loginUser)
       onComplete({
         username,
-        locationName: locationName || "Pinned Location",
-        coordinates: locationCoords || { lat: defaultLat, lng: defaultLng }
+        locationName: locName,
+        coordinates: coords
       });
+    } catch (err) {
+      console.error("Setup error:", err);
+      setError("Failed to complete setup. Please try again.");
+      setIsSubmitting(false);
     }
   };
 
@@ -118,17 +144,32 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
           <div className="absolute bottom-[-20%] left-[-20%] w-64 h-64 bg-black/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="relative z-10">
-            <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-8 border border-white/20 shadow-lg ring-1 ring-white/30">
-              <User className="w-7 h-7 text-white" />
+            <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mb-8 border border-white/20 shadow-lg ring-1 ring-white/30 overflow-hidden relative">
+              <Image src="/logo.png" alt="KrishiBot" fill className="object-cover" />
             </div>
 
             <h1 className="text-4xl font-bold mb-4 tracking-tight text-shadow-sm">
               Welcome to <br />
-              <span className="text-agri-200">Kheti-Pati</span>
+              <span className="text-agri-200">KrishiBot</span>
             </h1>
             <p className="text-agri-50/90 text-lg leading-relaxed font-light mb-8">
               Your AI-powered precision agriculture companion.
             </p>
+
+            {/* Backend Connection Status */}
+            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isBackendConnected ? 'bg-green-500/20' : 'bg-yellow-500/20'} mb-6`}>
+              {isBackendConnected ? (
+                <>
+                  <CheckCircle className="w-4 h-4 text-green-300" />
+                  <span className="text-xs text-green-100 font-medium">Connected to KrishiBot Server</span>
+                </>
+              ) : (
+                <>
+                  <AlertCircle className="w-4 h-4 text-yellow-300" />
+                  <span className="text-xs text-yellow-100 font-medium">Offline Mode (Demo Data)</span>
+                </>
+              )}
+            </div>
 
             {/* Feature Icons Arrangement */}
             <div className="grid grid-cols-3 gap-2 border-t border-white/10 pt-8">
@@ -165,6 +206,13 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
               <h3 className="text-2xl font-bold text-gray-800">Setup Profile</h3>
               <p className="text-gray-500">Let's personalize your farming experience.</p>
             </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                {error}
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Your Name</label>
@@ -246,10 +294,19 @@ const UserSetup: React.FC<UserSetupProps> = ({ onComplete }) => {
             <div className="pt-2 flex justify-end">
               <button
                 onClick={handleSubmit}
-                disabled={!username || (!locationName && !locationCoords)}
+                disabled={!username || (!locationName && !locationCoords) || isSubmitting}
                 className="bg-gradient-to-r from-agri-600 to-agri-500 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:shadow-xl hover:shadow-agri-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:-translate-y-0.5 active:translate-y-0"
               >
-                Get Started <ArrowRight className="w-5 h-5" />
+                {isSubmitting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    Get Started <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
               </button>
             </div>
           </div>

@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
+import Image from "next/image"
 import { Menu, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -89,12 +91,27 @@ export default function Header() {
             transition={{ delay: 0.2 }}
             className="flex flex-col justify-center items-start mix-blend-difference"
           >
-            <h1
-              className={`font-brier text-4xl leading-none mt-1 tracking-tight font-bold transition-colors duration-300 ${logoColor === "white" ? "text-white" : "text-lorenzo-dark"
-                }`}
-            >
-              KRISHIBOT
-            </h1>
+            <Link href="/" className="flex items-center gap-3 group">
+              <motion.div
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.7 }}
+                className="relative w-10 h-10 md:w-12 md:h-12"
+              >
+                <Image
+                  src="/logo.png"
+                  alt="KrishiBot"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </motion.div>
+              <h1
+                className={`font-brier text-3xl md:text-4xl leading-none mt-1 tracking-tight font-bold transition-colors duration-300 group-hover:text-lorenzo-accent ${logoColor === "white" ? "text-white" : "text-lorenzo-dark"
+                  }`}
+              >
+                KRISHIBOT
+              </h1>
+            </Link>
           </motion.div>
 
           <motion.div

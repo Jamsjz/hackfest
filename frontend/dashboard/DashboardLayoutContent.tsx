@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Script from 'next/script';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Leaf, Activity, FileText, Layers, LayoutGrid, Bug } from './components/ui/Icons';
 import UserSetup from './components/UserSetup';
 import UserProfilePanel from './components/UserProfilePanel';
@@ -11,7 +12,7 @@ import VoiceAssistant from './components/VoiceAssistant';
 import { useDashboard } from './DashboardContext';
 
 export default function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
-    const { user, setUser, logout } = useDashboard();
+    const { user, setUser, logout, isBackendConnected } = useDashboard();
     const [showProfile, setShowProfile] = useState(false);
     const [isLeafletLoaded, setIsLeafletLoaded] = useState(false);
     const router = useRouter();
@@ -67,8 +68,8 @@ export default function DashboardLayoutContent({ children }: { children: React.R
                     <>
                         {/* Sidebar */}
                         <aside className="hidden md:flex flex-col w-24 bg-white border-r border-gray-200 py-6 px-2 items-center z-20">
-                            <div className="mb-8 p-2 bg-green-600 rounded-xl shadow-lg">
-                                <Leaf className="w-8 h-8 text-white" />
+                            <div className="mb-8 w-14 h-14 relative rounded-full overflow-hidden shadow-lg border-2 border-green-100">
+                                <Image src="/logo.png" alt="KrishiBot" fill className="object-cover" />
                             </div>
                             <div className="flex-1 w-full px-2">
                                 <SidebarItem

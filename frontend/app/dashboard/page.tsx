@@ -4,30 +4,44 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import Dashboard from '@/dashboard/components/Dashboard';
 import { useDashboard } from '@/dashboard/DashboardContext';
-import { WeatherData } from '@/dashboard/types';
 
 export default function DashboardPage() {
-    const { crops, activeCropId } = useDashboard();
+    const { crops, activeCropId, weather, weatherLoading, weatherError, refreshWeather, isBackendConnected } = useDashboard();
     const router = useRouter();
 
-    // Mock weather data
-    const weather: WeatherData = {
+    // Convert backend weather to Dashboard format with fallback
+    const dashboardWeather = weather ? {
+        tempMax: weather.tempMax,
+        tempMin: weather.tempMin,
+        humidity: weather.humidity,
+        rain: weather.rain,
+        windSpeed: weather.windSpeed,
+        soilMoisture: weather.soilMoisture,
+        condition: weather.condition,
+    } : {
+        // Fallback mock data
         tempMax: 28,
         tempMin: 19,
         humidity: 65,
         rain: 0,
         windSpeed: 12,
         soilMoisture: 42,
-        condition: 'Sunny'
+        condition: 'Sunny' as const,
     };
 
     const activeCrop = crops.find(c => c.id === activeCropId);
 
     return (
         <Dashboard
-            weather={weather}
+            weather={dashboardWeather}
             activeCrop={activeCrop}
             onAddCrop={() => router.push('/dashboard/crop-wizard')}
+            weatherLoading={weatherLoading}
+            weatherError={weatherError}
+            onRefreshWeather={refreshWeather}
+            isBackendConnected={isBackendConnected}
+            soilData={weather?.soilData}
+            dailyForecast={weather?.dailyData}
         />
     );
 }

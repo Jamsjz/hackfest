@@ -2,21 +2,25 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, X, AgriBot } from './ui/Icons';
+import { Mic, X, AgriBot, AlertCircle, CheckCircle } from './ui/Icons';
 import { generateChatResponse } from '../../lib/gemini-service';
+import * as api from '../../lib/api-service';
 import { ChatMessage } from '../types';
 import ReactMarkdown from 'react-markdown';
+import { useDashboard } from '../DashboardContext';
 
 interface VoiceAssistantProps {
   hasBottomNav?: boolean;
 }
 
 const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false }) => {
+  const { isBackendConnected } = useDashboard();
   const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [useBackend, setUseBackend] = useState(true);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -52,17 +56,36 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
     const loadingId = "loading-" + Date.now();
     setMessages(prev => [...prev, { id: loadingId, role: 'model', text: 'Thinking...', timestamp: Date.now() }]);
 
-    const responseText = await generateChatResponse(
-      messages.map(m => ({ role: m.role, text: m.text })),
-      userMsg.text
-    );
+    try {
+      let responseText = "";
 
-    setMessages(prev => prev.filter(m => m.id !== loadingId).concat({
-      id: (Date.now() + 1).toString(),
-      role: 'model',
-      text: responseText,
-      timestamp: Date.now()
-    }));
+      if (isBackendConnected && useBackend) {
+        // Use Backend API
+        const history = messages.map(m => ({ role: m.role, text: m.text }));
+        responseText = await api.sendChatMessage(history, userMsg.text);
+      } else {
+        // Use Client-side Gemini
+        responseText = await generateChatResponse(
+          messages.map(m => ({ role: m.role, text: m.text })),
+          userMsg.text
+        );
+      }
+
+      setMessages(prev => prev.filter(m => m.id !== loadingId).concat({
+        id: (Date.now() + 1).toString(),
+        role: 'model',
+        text: responseText,
+        timestamp: Date.now()
+      }));
+    } catch (error) {
+      console.error("Chat Error:", error);
+      setMessages(prev => prev.filter(m => m.id !== loadingId).concat({
+        id: (Date.now() + 1).toString(),
+        role: 'model',
+        text: "Sorry, I encountered an error connecting to the knowledge base.",
+        timestamp: Date.now()
+      }));
+    }
   };
 
   // Dynamic classes based on whether bottom nav exists (Dashboard) or not (User Setup/Desktop)
@@ -103,13 +126,34 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
                 </div>
                 <div>
                   <h3 className="font-bold text-lg">कृषिबिद</h3>
-                  <p className="text-[10px] text-agri-100 uppercase tracking-wider font-medium">Smart Agri Assistant</p>
+                  <div className="flex items-center gap-1">
+                    <span className={`w-1.5 h-1.5 rounded-full ${isBackendConnected ? 'bg-green-300' : 'bg-yellow-300'} animate-pulse`}></span>
+                    <p className="text-[10px] text-agri-100 uppercase tracking-wider font-medium">
+                      {isBackendConnected && useBackend ? 'Smart Server AI' : 'Local AI Mode'}
+                    </p>
+                  </div>
                 </div>
               </div>
               <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-white/20 rounded transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Connection Info / Toggle */}
+            {isBackendConnected && (
+              <div className="px-4 py-1.5 bg-gray-50 border-b border-gray-100 flex items-center justify-between text-xs">
+                <span className="text-gray-500">Connection Secure</span>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-xs text-gray-400">Use Server</span>
+                  <input
+                    type="checkbox"
+                    checked={useBackend}
+                    onChange={(e) => setUseBackend(e.target.checked)}
+                    className="w-3 h-3 rounded border-gray-300 text-agri-600 focus:ring-agri-500"
+                  />
+                </label>
+              </div>
+            )}
 
             {/* Chat Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 custom-scrollbar">
@@ -119,8 +163,10 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ hasBottomNav = false })
                     <AgriBot className="w-10 h-10 text-agri-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-600">नमस्ते! I am कृषिबिद (Krishibid).</p>
-                    <p className="text-xs mt-1 text-gray-400">Ask me about your crops, soil, or weather.</p>
+                    <h4 className="font-bold text-gray-700">Namaste! I am कृषिबिद</h4>
+                    <p className="text-xs mt-1 text-gray-500 px-4">
+                      Your expert farming assistant. Ask me about crops, diseases, or weather conditions.
+                    </p>
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center mt-4 px-4">
                     <button onClick={() => setInputValue("Analyze my crop health")} className="text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-full hover:bg-gray-50 text-gray-600 shadow-sm transition-colors">Analyze crop health</button>

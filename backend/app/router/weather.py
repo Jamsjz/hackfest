@@ -35,6 +35,9 @@ async def get_weather_data(
     user: models.User = Depends(auth.get_user_by_username),
     db: AsyncSession = Depends(get_db),
 ):
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     latitude = user.latitude
     longitude = user.longitude
 

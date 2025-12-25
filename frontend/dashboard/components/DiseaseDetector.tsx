@@ -2,20 +2,36 @@
 
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, X, Activity } from './ui/Icons';
+import { Camera, X, Activity, AlertCircle, CheckCircle } from './ui/Icons';
 import { analyzeImage } from '../../lib/gemini-service';
+import * as api from '../../lib/api-service';
 import { AnalysisResult } from '../types';
 import ContextualChat from './ContextualChat';
+import { useDashboard } from '../DashboardContext';
 
 interface DiseaseDetectorProps {
   onClose?: () => void;
   isPage?: boolean;
 }
 
+interface BackendDiseaseResult {
+  id: number;
+  detected_disease: string;
+  confidence_score: number;
+  precautions?: string;
+  solutions?: string;
+  image_path: string;
+}
+
 const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = false }) => {
+  const { isBackendConnected } = useDashboard();
   const [image, setImage] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [backendResult, setBackendResult] = useState<BackendDiseaseResult | null>(null);
+  const [useBackend, setUseBackend] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -23,10 +39,13 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImage(reader.result as string);
         setResult(null);
+        setBackendResult(null);
+        setError(null);
       };
       reader.readAsDataURL(file);
     }
@@ -35,7 +54,30 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
   const handleAnalyze = async () => {
     if (!image) return;
     setAnalyzing(true);
+    setError(null);
+
     try {
+      // Try backend first if connected and we have a file
+      if (isBackendConnected && useBackend && imageFile) {
+        try {
+          const backendResponse = await api.predictDisease(imageFile);
+          setBackendResult(backendResponse);
+          setResult({
+            title: backendResponse.detected_disease,
+            description: backendResponse.precautions || "Analysis complete",
+            recommendation: backendResponse.solutions || "Consult agricultural expert for detailed treatment.",
+            confidence: Number(backendResponse.confidence_score) / 100,
+            type: 'disease'
+          });
+          setAnalyzing(false);
+          return;
+        } catch (backendError) {
+          console.warn('Backend analysis failed, falling back to Gemini:', backendError);
+          // Fall back to Gemini
+        }
+      }
+
+      // Use Gemini API for analysis
       const jsonResponse = await analyzeImage(image, 'disease');
       const parsed = JSON.parse(jsonResponse);
       setResult({
@@ -47,7 +89,7 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
       });
     } catch (e) {
       console.error(e);
-      alert('Analysis failed. Please try again.');
+      setError('Analysis failed. Please try again.');
     } finally {
       setAnalyzing(false);
     }
@@ -55,6 +97,38 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
 
   const renderContent = () => (
     <>
+      {/* Analysis Mode Toggle */}
+      <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+        <div className="flex items-center gap-2">
+          {isBackendConnected ? (
+            <CheckCircle className="w-4 h-4 text-green-500" />
+          ) : (
+            <AlertCircle className="w-4 h-4 text-yellow-500" />
+          )}
+          <span className="text-xs font-medium text-gray-600">
+            {isBackendConnected ? 'ML Model Available' : 'Using AI Analysis'}
+          </span>
+        </div>
+        {isBackendConnected && (
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="text-xs text-gray-500">Use ML Model</span>
+            <input
+              type="checkbox"
+              checked={useBackend}
+              onChange={(e) => setUseBackend(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+            />
+          </label>
+        )}
+      </div>
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
+          <AlertCircle className="w-4 h-4" />
+          {error}
+        </div>
+      )}
+
       {!image ? (
         <div className="flex flex-col gap-4 py-4">
           <div
@@ -100,7 +174,13 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
           <div className="relative rounded-2xl overflow-hidden h-56 bg-gray-900 shadow-inner">
             <img src={image} alt="Upload" className="w-full h-full object-contain mx-auto" />
             <button
-              onClick={() => setImage(null)}
+              onClick={() => {
+                setImage(null);
+                setImageFile(null);
+                setResult(null);
+                setBackendResult(null);
+                setError(null);
+              }}
               className="absolute top-3 right-3 bg-black/50 text-white p-1.5 rounded-full hover:bg-black/70 backdrop-blur-sm transition-colors"
             >
               <X className="w-4 h-4" />
@@ -112,7 +192,7 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
               onClick={handleAnalyze}
               className="w-full py-4 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-xl font-bold hover:shadow-lg hover:shadow-red-500/30 transition-all transform active:scale-95"
             >
-              Analyze Plant Health
+              {useBackend && isBackendConnected ? 'Analyze with ML Model' : 'Analyze with AI'}
             </button>
           )}
 
@@ -123,8 +203,15 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
                 <div className="absolute inset-0 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
               </div>
               <div>
-                <p className="text-gray-800 font-bold">Scanning leaf patterns...</p>
-                <p className="text-xs text-gray-500 mt-1">Checking against 50+ disease models</p>
+                <p className="text-gray-800 font-bold">
+                  {useBackend && isBackendConnected ? 'Running ML Model...' : 'Scanning leaf patterns...'}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {useBackend && isBackendConnected
+                    ? 'Using trained disease detection model'
+                    : 'Checking against 50+ disease models'
+                  }
+                </p>
               </div>
             </div>
           )}
@@ -138,9 +225,16 @@ const DiseaseDetector: React.FC<DiseaseDetectorProps> = ({ onClose, isPage = fal
               <div className="bg-red-50 rounded-2xl p-5 border border-red-100 space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-xl text-red-900">{result.title}</h4>
-                  <span className="bg-white px-2.5 py-1 rounded-md text-xs font-bold text-red-700 border border-red-200 shadow-sm">
-                    {(result.confidence * 100).toFixed(0)}% Match
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {backendResult && (
+                      <span className="bg-green-100 px-2 py-1 rounded-md text-xs font-bold text-green-700 border border-green-200">
+                        ML Model
+                      </span>
+                    )}
+                    <span className="bg-white px-2.5 py-1 rounded-md text-xs font-bold text-red-700 border border-red-200 shadow-sm">
+                      {(result.confidence * 100).toFixed(0)}% Match
+                    </span>
+                  </div>
                 </div>
                 <p className="text-sm text-red-800/80 leading-relaxed font-medium">{result.description}</p>
 

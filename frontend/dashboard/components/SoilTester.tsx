@@ -2,31 +2,79 @@
 
 import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, X, Layers } from './ui/Icons';
+import { Camera, X, Layers, AlertCircle, CheckCircle } from './ui/Icons';
 import { analyzeImage } from '../../lib/gemini-service';
+import * as api from '../../lib/api-service';
 import { AnalysisResult } from '../types';
 import ContextualChat from './ContextualChat';
+import { useDashboard } from '../DashboardContext';
 
 interface SoilTesterProps {
   onClose?: () => void;
   isPage?: boolean;
 }
 
+interface BackendSoilResult {
+  id: number;
+  predicted_soil_type: string;
+  image_path: string;
+}
+
 const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
+  const { isBackendConnected } = useDashboard();
   const [image, setImage] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [backendResult, setBackendResult] = useState<BackendSoilResult | null>(null);
+  const [useBackend, setUseBackend] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Soil type descriptions and recommendations
+  const soilInfo: Record<string, { description: string; recommendation: string }> = {
+    'Alluvial Soil': {
+      description: 'Rich in minerals, highly fertile. Found in river valleys and deltas. Good water retention.',
+      recommendation: 'Ideal for rice, wheat, sugarcane, and vegetables. Add organic matter for best results.'
+    },
+    'Black Soil': {
+      description: 'High clay content, excellent moisture retention. Also known as regur soil.',
+      recommendation: 'Best for cotton, soybean, and groundnut. Requires good drainage during monsoon.'
+    },
+    'Red Soil': {
+      description: 'Iron-rich, slightly acidite. Porous texture with moderate fertility.',
+      recommendation: 'Suitable for millets, pulses, and groundnuts. Add lime to reduce acidity.'
+    },
+    'Laterite Soil': {
+      description: 'Leached soil with low nutrients. High iron and aluminium content.',
+      recommendation: 'Needs heavy fertilization. Suitable for cashew, rubber, and tea with amendments.'
+    },
+    'Sandy Soil': {
+      description: 'Low water retention, drains quickly. Light and warm texture.',
+      recommendation: 'Good for root vegetables and melons. Add compost to improve water retention.'
+    },
+    'Clay Soil': {
+      description: 'Heavy, dense soil with high nutrient content. Poor drainage.',
+      recommendation: 'Add sand and organic matter for better drainage. Suitable for crops that need moisture.'
+    },
+    'Loamy Soil': {
+      description: 'Perfect balance of sand, silt, and clay. Excellent for agriculture.',
+      recommendation: 'Ideal for most crops. Maintain organic matter levels for continued fertility.'
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImage(reader.result as string);
         setResult(null);
+        setBackendResult(null);
+        setError(null);
       };
       reader.readAsDataURL(file);
     }
@@ -35,7 +83,36 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
   const handleAnalyze = async () => {
     if (!image) return;
     setAnalyzing(true);
+    setError(null);
+
     try {
+      // Try backend first if connected and we have a file
+      if (isBackendConnected && useBackend && imageFile) {
+        try {
+          const backendResponse = await api.predictSoilType(imageFile);
+          setBackendResult(backendResponse);
+
+          const info = soilInfo[backendResponse.predicted_soil_type] || {
+            description: "Soil type identified. Analysis complete.",
+            recommendation: "Consult agricultural expert for detailed analysis."
+          };
+
+          setResult({
+            title: backendResponse.predicted_soil_type,
+            description: info.description,
+            recommendation: info.recommendation,
+            confidence: 0.85,
+            type: 'soil'
+          });
+          setAnalyzing(false);
+          return;
+        } catch (backendError) {
+          console.warn('Backend analysis failed, falling back to Gemini:', backendError);
+          // Fall back to Gemini
+        }
+      }
+
+      // Use Gemini API for analysis
       const jsonResponse = await analyzeImage(image, 'soil');
       const parsed = JSON.parse(jsonResponse);
       setResult({
@@ -47,7 +124,7 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
       });
     } catch (e) {
       console.error(e);
-      alert('Analysis failed. Please try again.');
+      setError('Analysis failed. Please try again.');
     } finally {
       setAnalyzing(false);
     }
@@ -55,6 +132,38 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
 
   const renderContent = () => (
     <>
+      {/* Analysis Mode Toggle */}
+      <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+        <div className="flex items-center gap-2">
+          {isBackendConnected ? (
+            <CheckCircle className="w-4 h-4 text-green-500" />
+          ) : (
+            <AlertCircle className="w-4 h-4 text-yellow-500" />
+          )}
+          <span className="text-xs font-medium text-gray-600">
+            {isBackendConnected ? 'ML Model Available' : 'Using AI Analysis'}
+          </span>
+        </div>
+        {isBackendConnected && (
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="text-xs text-gray-500">Use ML Model</span>
+            <input
+              type="checkbox"
+              checked={useBackend}
+              onChange={(e) => setUseBackend(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+            />
+          </label>
+        )}
+      </div>
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
+          <AlertCircle className="w-4 h-4" />
+          {error}
+        </div>
+      )}
+
       {!image ? (
         <div className="flex flex-col gap-4 py-4">
           <div
@@ -100,7 +209,13 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
           <div className="relative rounded-2xl overflow-hidden h-56 bg-gray-900 shadow-inner">
             <img src={image} alt="Upload" className="w-full h-full object-contain mx-auto" />
             <button
-              onClick={() => setImage(null)}
+              onClick={() => {
+                setImage(null);
+                setImageFile(null);
+                setResult(null);
+                setBackendResult(null);
+                setError(null);
+              }}
               className="absolute top-3 right-3 bg-black/50 text-white p-1.5 rounded-full hover:bg-black/70 backdrop-blur-sm transition-colors"
             >
               <X className="w-4 h-4" />
@@ -112,7 +227,7 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
               onClick={handleAnalyze}
               className="w-full py-4 bg-gradient-to-r from-amber-700 to-amber-600 text-white rounded-xl font-bold hover:shadow-lg hover:shadow-amber-700/30 transition-all transform active:scale-95"
             >
-              Analyze Soil Quality
+              {useBackend && isBackendConnected ? 'Analyze with ML Model' : 'Analyze with AI'}
             </button>
           )}
 
@@ -123,8 +238,15 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
                 <div className="absolute inset-0 border-4 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
               </div>
               <div>
-                <p className="text-gray-800 font-bold">Analyzing composition...</p>
-                <p className="text-xs text-gray-500 mt-1">Estimating texture and moisture</p>
+                <p className="text-gray-800 font-bold">
+                  {useBackend && isBackendConnected ? 'Running ML Model...' : 'Analyzing composition...'}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {useBackend && isBackendConnected
+                    ? 'Using trained soil classification model'
+                    : 'Estimating texture and moisture'
+                  }
+                </p>
               </div>
             </div>
           )}
@@ -138,6 +260,11 @@ const SoilTester: React.FC<SoilTesterProps> = ({ onClose, isPage = false }) => {
               <div className="bg-amber-50 rounded-2xl p-5 border border-amber-100 space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-xl text-amber-900">{result.title}</h4>
+                  {backendResult && (
+                    <span className="bg-green-100 px-2 py-1 rounded-md text-xs font-bold text-green-700 border border-green-200">
+                      ML Model
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm text-amber-800/80 leading-relaxed font-medium">{result.description}</p>
 
