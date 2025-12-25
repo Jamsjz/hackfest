@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     Text,
     Date,
+    Boolean,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -18,14 +19,17 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
-    latitude = 28.573
-    longitude = 80.806
+    latitude = Column(Numeric(precision=9, scale=6), nullable=True)
+    longitude = Column(Numeric(precision=9, scale=6), nullable=True)
+    is_expert = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships to other systems
     disease_scans = relationship("DiseaseDetection", back_populates="user")
     soil_type_predictions = relationship("SoilTypePrediction", back_populates="user")
     risk_reports = relationship("RiskPrediction", back_populates="user")
+    questions = relationship("Question", back_populates="user")
+    answers = relationship("Answer", back_populates="user")
 
 
 class DiseaseDetection(Base):
@@ -97,3 +101,54 @@ class RiskPrediction(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="risk_reports")
+
+
+class Question(Base):
+    __tablename__ = "questions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    image_path = Column(String, nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="questions")
+    answers = relationship("Answer", back_populates="question", cascade="all, delete-orphan")
+    votes = relationship("QuestionVote", back_populates="question", cascade="all, delete-orphan")
+
+
+class Answer(Base):
+    __tablename__ = "answers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    content = Column(Text, nullable=False)
+    question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    question = relationship("Question", back_populates="answers")
+    user = relationship("User", back_populates="answers")
+    votes = relationship("AnswerVote", back_populates="answer", cascade="all, delete-orphan")
+
+
+class QuestionVote(Base):
+    __tablename__ = "question_votes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
+
+    # Constraint: Only one upvote per user per question
+    question = relationship("Question", back_populates="votes")
+
+
+class AnswerVote(Base):
+    __tablename__ = "answer_votes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    answer_id = Column(Integer, ForeignKey("answers.id"), nullable=False)
+    vote_type = Column(Integer, nullable=False)  # 1 for upvote, -1 for downvote
+
+    answer = relationship("Answer", back_populates="votes")

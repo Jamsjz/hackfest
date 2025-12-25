@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Leaf, CloudRain, Thermometer, Activity, Layers, ArrowRight, Bug, FileText, RefreshCw, AlertCircle, Sun, Cloud, Zap, Sparkles } from './ui/Icons';
 import { CropData, WeatherData } from '../types';
+import ForecastingWidget from './ForecastingWidget';
 
 interface SoilData {
   ph: number;
@@ -240,6 +241,16 @@ const Dashboard: React.FC<DashboardProps> = ({
             <p className="text-xs text-orange-700 font-bold uppercase mb-1">pH Level</p>
             <p className="text-2xl font-bold text-orange-900">{soilData.ph.toFixed(2)}</p>
           </motion.div>
+        </section>
+      )}
+
+      {/* AI Forecasting Simulation */}
+      {weather.agriForecast && weather.agriForecast.length > 0 && (
+        <section className="mb-2">
+          <ForecastingWidget
+            forecast={weather.agriForecast}
+            cropName={activeCrop ? activeCrop.name : "Rice"}
+          />
         </section>
       )}
 

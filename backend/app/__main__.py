@@ -2,12 +2,13 @@ import uvicorn
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
-from app.core.config import RELOAD
+from app.core.config import RELOAD, UPLOAD_DIR
 from app.db.session import engine
 from app.db import models
-from app.router import crop_router, disease_router, risk_router, soiltype_router, user_router, weather_router, chat_router
+from app.router import crop_router, disease_router, risk_router, soiltype_router, user_router, weather_router, chat_router, forum_router
 
 
 @asynccontextmanager
@@ -33,6 +34,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files for uploads (images)
+app.mount("/static", StaticFiles(directory=UPLOAD_DIR), name="static")
+
 # Include routers
 app.include_router(user_router, prefix="/users", tags=["Users"])
 app.include_router(disease_router, prefix="/tests", tags=["Disease Detection"])
@@ -41,6 +45,7 @@ app.include_router(risk_router, prefix="/tests", tags=["Risk Assessment"])
 app.include_router(crop_router, prefix="/crop", tags=["Crop Recommendation"])
 app.include_router(weather_router, prefix="/weather", tags=["Weather"])
 app.include_router(chat_router, prefix="/chat", tags=["AI Chat"])
+app.include_router(forum_router, prefix="/forum", tags=["Community Forum"])
 
 
 @app.get("/", tags=["Health"])
