@@ -1,11 +1,12 @@
 import { GoogleGenAI } from "@google/genai";
 
 const getAiClient = () => {
-  if (!process.env.API_KEY) {
-    console.warn("API_KEY is missing. AI features will use mock responses.");
+  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.warn("GEMINI_API_KEY is missing. AI features will use mock responses.");
     return null;
   }
-  return new GoogleGenAI({ apiKey: process.env.API_KEY });
+  return new GoogleGenAI({ apiKey });
 };
 
 export const generateChatResponse = async (
@@ -21,7 +22,7 @@ export const generateChatResponse = async (
   }
 
   try {
-    const model = 'gemini-3-flash-preview';
+    const model = 'gemini-2.5-flash';
     let systemInstruction = `You are "कृषिबिद" (Krishibid), a helpful, friendly, and knowledgeable Nepali farming assistant AI (AgriBot). 
     You speak in a mix of English and Nepali (Romanized or Devanagari) to help farmers.
     You provide advice on crops, weather, diseases, and irrigation.
@@ -36,9 +37,9 @@ export const generateChatResponse = async (
       { role: 'user', parts: [{ text: lastMessage }] }
     ];
 
-    const response = await ai.models.generateContent({
+    const response = await (ai as any).models.generateContent({
       model,
-      contents: contents as any, 
+      contents,
       config: {
         systemInstruction,
       }
@@ -67,19 +68,21 @@ export const analyzeImage = async (
   }
 
   try {
-    const model = 'gemini-2.5-flash-image';
-    const prompt = type === 'disease' 
+    const model = 'gemini-2.5-flash';
+    const prompt = type === 'disease'
       ? "Analyze this plant image for diseases. Return a JSON object with keys: title (disease name), description (severity and visual signs), recommendation (treatment). Do not use markdown formatting."
       : "Analyze this soil image. Return a JSON object with keys: title (soil type), description (moisture and texture), recommendation (crops suitable and improvements). Do not use markdown formatting.";
 
-    const response = await ai.models.generateContent({
+    const base64Data = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
+
+    const response = await (ai as any).models.generateContent({
       model,
-      contents: {
+      contents: [{
         parts: [
-          { inlineData: { mimeType: 'image/jpeg', data: imageBase64.split(',')[1] } },
+          { inlineData: { mimeType: 'image/jpeg', data: base64Data } },
           { text: prompt }
         ]
-      },
+      }],
       config: {
         responseMimeType: 'application/json'
       }

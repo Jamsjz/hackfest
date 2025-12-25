@@ -11,3 +11,4 @@
 
 **/uploads/
 **/data.db
+**/.cache.sqlite
