@@ -26,8 +26,6 @@ async def register_user(
         username=new_user.username,
         latitude=new_user.latitude,
         longitude=new_user.longitude,
-        land_area_ropani=new_user.land_area_ropani,
-        money=new_user.money,
     )
     db.add(new_user_db)
     await db.commit()
@@ -77,10 +75,6 @@ async def update_user(
         user.latitude = user_update.latitude
     if user_update.longitude is not None:
         user.longitude = user_update.longitude
-    if user_update.land_area_ropani is not None:
-        user.land_area_ropani = user_update.land_area_ropani
-    if user_update.money is not None:
-        user.money = user_update.money
 
     await db.commit()
     await db.refresh(user)

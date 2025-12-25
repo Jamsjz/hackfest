@@ -22,12 +22,6 @@ class User(Base):
     longitude = Column(Numeric(10, 7), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    # Store money as Integer (cents) or Numeric for precision
-    money = Column(Integer, nullable=False)
-
-    # Land area in Ropani (high precision for small plots)
-    land_area_ropani = Column(Numeric(10, 4), nullable=False)
-
     # Relationships to other systems
     disease_scans = relationship("DiseaseDetection", back_populates="user")
     soil_type_predictions = relationship("SoilTypePrediction", back_populates="user")

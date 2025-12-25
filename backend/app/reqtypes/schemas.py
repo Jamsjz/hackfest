@@ -8,8 +8,6 @@ class UserBase(BaseModel):
     username: str
     latitude: condecimal(max_digits=10, decimal_places=7)  # type: ignore
     longitude: condecimal(max_digits=10, decimal_places=7)  # type: ignore
-    land_area_ropani: condecimal(max_digits=10, decimal_places=4)  # type: ignore
-    money: int
 
 
 class DiseaseBase(BaseModel):
@@ -46,8 +44,6 @@ class UserUpdate(BaseModel):
     new_username: Optional[str] = None
     latitude: Optional[condecimal(max_digits=10, decimal_places=7)] = None  # type: ignore
     longitude: Optional[condecimal(max_digits=10, decimal_places=7)] = None  # type: ignore
-    land_area_ropani: Optional[condecimal(max_digits=10, decimal_places=4)] = None  # type: ignore
-    money: Optional[int] = None
 
 
 class SoilTypePredictionBase(BaseModel):
